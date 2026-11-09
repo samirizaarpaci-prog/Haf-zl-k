@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Hafızlık</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700;800&family=Alegreya+Sans:wght@400;500;700&family=Amiri:wght@400;700&display=swap">
+<style>
+/* Layout: one quiet paper column; each day is a single emerald "cover" card framed by gold cetvel rules, and the 30×20 page map is the signature view. */
+:root{
+  --paper:#F1F4EE;--sheet:#FAFCF8;--ink:#16211B;--ink-2:#55635A;--rule:#D8DFD4;
+  --cell:#DFE6DB;--leaf:#2D7754;--on-leaf:#FFFFFF;--review:#E0C374;--gold:#A27618;--gold-ink:#86600F;
+  --emerald-ink:#17493A;--cover:#17493A;--on-cover:#EEF3EC;--on-cover-2:#B7CABE;--gold-hi:#E2BC62;--on-gold:#1B261E;
+  --cover-field:rgba(255,255,255,.09);--cetvel:rgba(226,188,98,.55);--cetvel-2:rgba(226,188,98,.22);
+  --danger:#A13A2A;--on-danger:#FFFFFF;--scrim:rgba(14,22,18,.45);
+  --shadow:0 1px 2px rgba(22,33,27,.06),0 10px 30px rgba(22,33,27,.09);
+  --f-display:"Alegreya","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --f-body:"Alegreya Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-arabic:"Amiri","Noto Naskh Arabic","Geeza Pro","Traditional Arabic",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0D1511;--sheet:#131E18;--ink:#E4EBE4;--ink-2:#98A79D;--rule:#24322A;
+  --cell:#1B2821;--leaf:#4BAA7F;--on-leaf:#0B140F;--review:#7C6631;--gold:#D5AA4E;--gold-ink:#DDB55E;
+  --emerald-ink:#7FCFA6;--cover:#174D3B;--on-cover:#EEF3EC;--on-cover-2:#A9C2B4;--gold-hi:#E7C470;--on-gold:#1B261E;
+  --cover-field:rgba(255,255,255,.08);--cetvel:rgba(231,196,112,.5);--cetvel-2:rgba(231,196,112,.2);
+  --danger:#E5806B;--on-danger:#1F0E0A;--scrim:rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.45);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0D1511;--sheet:#131E18;--ink:#E4EBE4;--ink-2:#98A79D;--rule:#24322A;
+  --cell:#1B2821;--leaf:#4BAA7F;--on-leaf:#0B140F;--review:#7C6631;--gold:#D5AA4E;--gold-ink:#DDB55E;
+  --emerald-ink:#7FCFA6;--cover:#174D3B;--on-cover:#EEF3EC;--on-cover-2:#A9C2B4;--gold-hi:#E7C470;--on-gold:#1B261E;
+  --cover-field:rgba(255,255,255,.08);--cetvel:rgba(231,196,112,.5);--cetvel-2:rgba(231,196,112,.2);
+  --danger:#E5806B;--on-danger:#1F0E0A;--scrim:rgba(0,0,0,.6);
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.45);
+  color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.5;font-variant-numeric:lining-nums;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body.has-sheet{overflow:hidden}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.5}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p,ul,figure{margin:0}
+.wrap{width:100%;max-width:46rem;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header + tabs */
+.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:1.1rem .4rem}
+.brand{display:flex;align-items:baseline;gap:.65rem;min-width:0;flex-wrap:wrap}
+.wordmark{font-family:var(--f-display);font-weight:800;font-size:1.6rem;line-height:1;letter-spacing:-.01em;color:var(--emerald-ink)}
+.mchip{font-size:.8rem;font-weight:500;color:var(--gold-ink);border:1px solid var(--rule);border-radius:999px;padding:.08rem .6rem;white-space:nowrap}
+.tabs{display:flex;gap:.2rem}
+.tab{display:flex;align-items:center;gap:.45rem;border:0;background:none;color:var(--ink-2);font-weight:500;font-size:.95rem;border-radius:999px;padding:.45rem .85rem}
+.tab svg{width:1.2rem;height:1.2rem;flex:none}
+.tab[aria-current="page"]{color:var(--emerald-ink);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--rule)}
+.tab[aria-current="page"] svg{color:var(--gold)}
+@media (max-width:759px){
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;justify-content:space-around;background:var(--sheet);border-top:1px solid var(--rule);
+    padding:.3rem max(16px,env(safe-area-inset-right,0px)) calc(.3rem + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .tab{flex:1;flex-direction:column;gap:.1rem;font-size:.76rem;padding:.35rem .4rem;border-radius:12px}
+  .tab[aria-current="page"]{background:none;box-shadow:none}
+}
+.view{display:flex;flex-direction:column;gap:1.6rem;padding-block:.6rem 2.5rem}
+@media (max-width:759px){.view{padding-bottom:calc(6rem + env(safe-area-inset-bottom,0px))}}
+
+/* shared bits */
+.label{font-family:var(--f-body);font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.block{display:flex;flex-direction:column;gap:.65rem;min-width:0}
+.block-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.empty,.hint,.note{color:var(--ink-2);font-size:.93rem;max-width:62ch}
+.banner{border:1px solid var(--rule);background:var(--sheet);border-radius:12px;padding:.6rem .9rem;font-size:.92rem;color:var(--ink-2)}
+.err{color:var(--danger);font-size:.92rem}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;padding:.55rem 1.15rem;border-radius:999px;border:1px solid transparent;font-weight:700;font-size:.98rem;line-height:1.2;text-align:center}
+.btn-gold{background:var(--gold-hi);color:var(--on-gold)}
+.btn-primary{background:var(--cover);color:var(--on-cover)}
+.btn-line{background:var(--sheet);border-color:var(--rule);color:var(--ink)}
+.btn-ghost{background:transparent;border-color:var(--cetvel);color:var(--on-cover)}
+.btn-danger{background:var(--danger);color:var(--on-danger)}
+.btn-wide{width:100%}
+.danger-line{color:var(--danger)}
+.linkish{background:none;border:0;padding:.25rem 0;font-weight:500;color:var(--gold-hi);text-decoration:underline;text-underline-offset:3px;text-align:left}
+.linkish.on-paper{color:var(--gold-ink)}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.84rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend span::before{content:"";width:.72rem;height:.72rem;border-radius:2px;background:var(--sw);flex:none}
+
+/* today */
+.dateline{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;color:var(--ink-2);font-size:.95rem}
+.dayno{font-family:var(--f-display);font-weight:700;font-size:1.05rem;color:var(--gold-ink);white-space:nowrap}
+.cover{position:relative;isolation:isolate;display:flex;flex-direction:column;gap:.55rem;background:var(--cover);color:var(--on-cover);border-radius:16px;padding:1.45rem 1.45rem 1.35rem;box-shadow:var(--shadow)}
+.cover::before,.cover::after{content:"";position:absolute;pointer-events:none;z-index:-1}
+.cover::before{inset:7px;border:1px solid var(--cetvel);border-radius:11px}
+.cover::after{inset:10px;border:1px solid var(--cetvel-2);border-radius:8px}
+.eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-hi)}
+.big{font-family:var(--f-display);font-weight:800;font-size:clamp(2.9rem,12vw,3.8rem);line-height:1;letter-spacing:-.01em;overflow-wrap:anywhere}
+.big .unit{font-size:.42em;font-weight:700;color:var(--gold-hi);margin-right:.2em;vertical-align:.4em}
+.big-word{font-size:clamp(2.2rem,9vw,3rem)}
+.cover-sub{color:var(--on-cover-2);font-size:1rem}
+.cover-act{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.35rem}
+.ck{width:1.15rem;height:1.15rem;border-radius:50%;background:var(--gold-hi);position:relative;flex:none}
+.ck::after{content:"";position:absolute;left:.39rem;top:.2rem;width:.3rem;height:.58rem;border:solid var(--on-gold);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.undo{color:var(--gold-hi);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.sep{color:var(--on-cover-2);font-weight:400}
+.cover-next{margin-top:.3rem;padding-top:.7rem;border-top:1px solid var(--cetvel-2);color:var(--on-cover-2);font-size:.93rem}
+.sure-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.ar{font-family:var(--f-arabic);font-size:2.1rem;line-height:1.3;color:var(--gold-hi)}
+.meter{height:.45rem;border-radius:99px;background:var(--cover-field);overflow:hidden;margin-top:.35rem}
+.meter>span{display:block;height:100%;background:var(--gold-hi);border-radius:inherit}
+.meter-cap{font-size:.9rem;color:var(--on-cover-2)}
+.cover-label{margin-top:.5rem;font-weight:500}
+.stepper{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.step{width:2.75rem;height:2.75rem;border-radius:50%;border:1px solid var(--cetvel);background:var(--cover-field);color:var(--on-cover);font-size:1.35rem;line-height:1;display:grid;place-items:center}
+.step-in{width:5.2rem;min-height:2.75rem;border-radius:12px;border:1px solid var(--cetvel);background:var(--cover-field);color:var(--on-cover);text-align:center;font-weight:700;font-size:1.15rem;padding:.3rem .4rem}
+.cover-links{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem}
+.entries{margin-top:.3rem;padding-top:.7rem;border-top:1px solid var(--cetvel-2);display:flex;flex-wrap:wrap;align-items:baseline;gap:.25rem .9rem;font-size:.93rem;color:var(--on-cover-2)}
+.entries b{color:var(--on-cover);font-weight:500}
+.items{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:.95rem;width:100%;padding:.85rem .1rem;border:0;border-bottom:1px solid var(--rule);background:none;text-align:left}
+.tick{width:1.65rem;height:1.65rem;border-radius:50%;border:2px solid var(--ink-2);position:relative;flex:none;transition:background .15s,border-color .15s}
+.item.is-done .tick{background:var(--leaf);border-color:var(--leaf)}
+.item.is-done .tick::after{content:"";position:absolute;left:.47rem;top:.2rem;width:.36rem;height:.7rem;border:solid var(--on-leaf);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.item-body{display:flex;flex-direction:column;min-width:0}
+.item-tag{font-size:.72rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--gold-ink)}
+.item-main{font-family:var(--f-display);font-weight:700;font-size:1.3rem;line-height:1.2;overflow-wrap:anywhere}
+.item-sub{font-size:.92rem;color:var(--ink-2)}
+.item.is-done .item-main{color:var(--ink-2)}
+.totals{font-size:.93rem;color:var(--ink-2)}
+.totals b{color:var(--ink);font-weight:700}
+
+/* progress */
+.hero{display:flex;flex-direction:column;gap:.45rem}
+.pct{font-family:var(--f-display);font-weight:800;font-size:clamp(3.6rem,17vw,5.4rem);line-height:.92;letter-spacing:-.02em;color:var(--emerald-ink)}
+.pct-sub{color:var(--ink-2)}
+.pct-sub b{color:var(--ink)}
+.bar{height:.5rem;border-radius:99px;background:var(--cell);overflow:hidden}
+.bar>span{display:block;height:100%;min-width:3px;background:var(--leaf);border-radius:inherit}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem;border-top:1px solid var(--rule)}
+@media (min-width:640px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{display:flex;flex-direction:column;gap:.1rem;padding:.8rem 0;border-bottom:1px solid var(--rule);min-width:0}
+.stat-l{font-size:.72rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
+.stat-v{font-family:var(--f-display);font-weight:700;font-size:1.5rem;line-height:1.15;font-variant-numeric:lining-nums tabular-nums}
+.stat-s{font-size:.84rem;color:var(--ink-2)}
+.map-grid{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:.4rem;row-gap:.3rem}
+.map-y{display:flex;flex-direction:column;justify-content:space-between;font-size:.7rem;line-height:1;color:var(--ink-2);text-align:right;padding-block:1px}
+.map,.map-x{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:2px}
+.mcol{display:grid;grid-template-rows:repeat(20,auto);gap:2px;padding:0;border:0;background:none;border-radius:3px;min-width:0}
+.mcol i{display:block;aspect-ratio:1;border-radius:1.5px;background:var(--cell)}
+.mcol i.m{background:var(--leaf)}
+.mcol i.r{background:var(--review)}
+.mcol i.n{background:var(--gold)}
+.mcol:hover i{opacity:.82}
+.map-x{font-size:.7rem;color:var(--ink-2);text-align:center;font-variant-numeric:tabular-nums}
+.map-x span{overflow:visible;white-space:nowrap}
+@media (max-width:420px){.map,.map-x,.mcol{gap:1px}}
+.sgrid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}
+@media (min-width:640px){.sgrid{grid-template-columns:repeat(19,minmax(0,1fr))}}
+.stile{position:relative;aspect-ratio:1;display:grid;place-items:center;padding:0;border:0;border-radius:4px;background:var(--cell);overflow:hidden;font-size:.68rem;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:0}
+.stile>span{position:absolute;left:0;right:0;bottom:0;height:var(--h);background:var(--leaf)}
+.stile>b{position:relative;font-weight:500}
+.stile.done{color:var(--on-leaf)}
+.stile.r>span{background:var(--review)}
+.stile.r{color:var(--ink)}
+.stile.n{box-shadow:inset 0 0 0 2px var(--gold);color:var(--ink)}
+.act{display:grid;grid-template-columns:auto repeat(12,minmax(0,1fr));gap:3px;max-width:27rem;align-items:center}
+.act .am,.act .ad{font-size:.68rem;color:var(--ink-2);white-space:nowrap;line-height:1}
+.act .ad{padding-right:.3rem}
+.ac{display:block;aspect-ratio:1;border-radius:3px;background:var(--cell)}
+.ac.e{background:var(--leaf)}
+.ac.t{background:var(--review)}
+.ac.f{visibility:hidden}
+.ac.now{box-shadow:0 0 0 1.5px var(--gold)}
+.hist{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.hrow{display:grid;grid-template-columns:6.2rem minmax(0,1fr) auto;gap:.8rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--rule);font-size:.93rem}
+.hdate{color:var(--ink-2);white-space:nowrap}
+.hnew{font-weight:500;overflow-wrap:anywhere;min-width:0}
+.hrev{color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* settings */
+.set-sec{display:flex;flex-direction:column;gap:.8rem;padding-top:1.15rem;border-top:1px solid var(--rule)}
+.set-row{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:.8rem 1.5rem}
+.set-main{flex:1 1 18rem;min-width:0}
+.set-title{font-family:var(--f-display);font-weight:700;font-size:1.4rem;line-height:1.2}
+.set-desc{color:var(--ink-2);font-size:.95rem;max-width:62ch}
+.field{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.field>label,.flabel{font-weight:500}
+.seg{display:flex;flex-wrap:wrap;gap:.4rem}
+.seg button{min-height:2.5rem;padding:.4rem .9rem;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);font-weight:500}
+.seg button[aria-checked="true"]{background:var(--cover);border-color:var(--cover);color:var(--on-cover)}
+.inp{width:8rem;min-height:2.75rem;padding:.5rem .75rem;border-radius:12px;border:1px solid var(--rule);background:var(--sheet);font-weight:700;font-size:1.05rem}
+.ta{width:100%;padding:.6rem .75rem;border-radius:12px;border:1px solid var(--rule);background:var(--sheet);font-size:.85rem;font-family:ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.rules{padding-left:1.15rem;display:flex;flex-direction:column;gap:.35rem;color:var(--ink-2);max-width:62ch}
+.confirm{display:flex;flex-direction:column;gap:.7rem;padding:.9rem 1rem;border:1px solid var(--rule);border-radius:14px;background:var(--sheet)}
+
+/* onboarding */
+.onb{display:grid;gap:1.8rem;padding-block:2.2rem 3rem}
+@media (min-width:880px){.onb{max-width:66rem;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:3.5rem;align-items:start;padding-top:3.5rem}}
+.onb-a,.onb-b{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.onb-title{font-family:var(--f-display);font-weight:800;font-size:clamp(3.2rem,15vw,5rem);line-height:.92;letter-spacing:-.02em;color:var(--emerald-ink)}
+.onb-lede{font-size:1.2rem;color:var(--ink);max-width:30ch}
+.facts{font-size:.8rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-ink)}
+.q{font-family:var(--f-display);font-weight:700;font-size:1.55rem;line-height:1.2}
+.demo{display:flex;flex-direction:column;gap:.6rem;min-width:0}
+.demo canvas{display:block;width:100%;height:auto}
+.demo figcaption{display:flex;flex-direction:column;gap:.35rem;font-size:.9rem;color:var(--ink-2)}
+.demo-top b{color:var(--gold-ink);font-family:var(--f-display);font-size:1.05rem}
+.methods{display:flex;flex-direction:column;gap:.55rem}
+.mopt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.85rem;width:100%;text-align:left;padding:.9rem 1rem;border:1px solid var(--rule);border-radius:14px;background:var(--sheet)}
+.mopt .dot{width:1.2rem;height:1.2rem;border-radius:50%;border:2px solid var(--ink-2);margin-top:.22rem;position:relative}
+.mopt[aria-checked="true"]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.mopt[aria-checked="true"] .dot{border-color:var(--gold)}
+.mopt[aria-checked="true"] .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--gold)}
+.mopt b{display:block;font-family:var(--f-display);font-weight:700;font-size:1.22rem;line-height:1.2}
+.mopt small{display:block;margin-top:.2rem;font-size:.92rem;line-height:1.45;color:var(--ink-2)}
+.loading{display:flex;flex-direction:column;gap:.8rem;padding-block:3rem}
+.loading p{color:var(--ink-2)}
+
+/* sheets */
+.scrim{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:var(--scrim)}
+.sheet{width:100%;max-width:38rem;max-height:90vh;max-height:90dvh;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:.95rem;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:var(--shadow);
+  padding:1.15rem max(16px,env(safe-area-inset-right,0px)) calc(1.3rem + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet:focus{outline:none}
+@media (min-width:760px){.scrim{align-items:center;padding:1.5rem}.sheet{border-radius:20px;padding:1.4rem 1.5rem}}
+.sh-head{display:flex;align-items:center;gap:.8rem}
+.sh-head>div{flex:1;min-width:0}
+.sh-head h2{font-family:var(--f-display);font-weight:800;font-size:1.6rem;line-height:1.1}
+.sh-sub{color:var(--ink-2);font-size:.93rem}
+.sh-nav,.sh-x{flex:none;width:2.75rem;height:2.75rem;display:grid;place-items:center;border-radius:50%;border:1px solid var(--rule);background:var(--sheet);font-size:1.4rem;line-height:1}
+.ar-lg{font-family:var(--f-arabic);font-size:1.9rem;color:var(--gold-ink);line-height:1.2}
+.pgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.45rem}
+.pg{display:flex;flex-direction:column;align-items:center;padding:.45rem .2rem;border:1px solid var(--rule);border-radius:12px;background:var(--sheet);min-width:0}
+.pg b{font-family:var(--f-display);font-size:1.2rem;line-height:1.15}
+.pg small{font-size:.74rem;color:var(--ink-2)}
+.pg.on{background:var(--leaf);border-color:var(--leaf);color:var(--on-leaf)}
+.pg.on small{color:var(--on-leaf)}
+.sh-actions{display:flex;flex-wrap:wrap;gap:.55rem}
+.search{width:100%;min-height:2.85rem;padding:.6rem .9rem;border-radius:12px;border:1px solid var(--rule);background:var(--sheet)}
+.slist{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.srow{display:grid;grid-template-columns:2.1rem minmax(0,1fr) auto 3.4rem;gap:.7rem;align-items:center;width:100%;padding:.55rem 0;border:0;border-bottom:1px solid var(--rule);background:none;text-align:left}
+.sn{text-align:right;font-size:.85rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.st{min-width:0}
+.st b{display:block;font-weight:700}
+.st small{font-size:.82rem;color:var(--ink-2)}
+.sa{font-family:var(--f-arabic);font-size:1.3rem;line-height:1.2;color:var(--ink-2)}
+.ss{text-align:right;font-size:.82rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.ss.done{color:var(--leaf)}
+.ss.part{color:var(--gold-ink)}
+.ss.cur{color:var(--emerald-ink)}
+.stepper.paper .step{border-color:var(--rule);background:var(--sheet);color:var(--ink)}
+.stepper.paper .step-in{border-color:var(--rule);background:var(--sheet);color:var(--ink)}
+.chip{display:inline-flex;align-items:center;min-height:2.75rem;padding:.4rem .9rem;border-radius:999px;border:1px dashed var(--rule);color:var(--emerald-ink);font-weight:500}
+
+#toast{position:fixed;left:50%;bottom:calc(1.5rem + env(safe-area-inset-bottom,0px));z-index:60;max-width:calc(100% - 32px);transform:translate(-50%,.8rem);opacity:0;pointer-events:none;background:var(--ink);color:var(--paper);padding:.6rem 1.05rem;border-radius:999px;font-weight:500;font-size:.93rem;text-align:center;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:759px){#toast{bottom:calc(5.4rem + env(safe-area-inset-bottom,0px))}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app" lang="tr"></div>
+<div id="sheet-root" lang="tr"></div>
+<div id="toast" lang="tr" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+"use strict";
+/*ENGINE-START*/
+// [Türkçe ad, Arapça ad, ayet sayısı, başladığı cüz, Medine mushafında başladığı sayfa]
+const SURAHS = [
+["Fâtiha","الفاتحة",7,1,1],["Bakara","البقرة",286,1,2],["Âl-i İmrân","آل عمران",200,3,50],["Nisâ","النساء",176,4,77],
+["Mâide","المائدة",120,6,106],["En'âm","الأنعام",165,7,128],["A'râf","الأعراف",206,8,151],["Enfâl","الأنفال",75,9,177],
+["Tevbe","التوبة",129,10,187],["Yûnus","يونس",109,11,208],["Hûd","هود",123,11,221],["Yûsuf","يوسف",111,12,235],
+["Ra'd","الرعد",43,13,249],["İbrâhîm","إبراهيم",52,13,255],["Hicr","الحجر",99,14,262],["Nahl","النحل",128,14,267],
+["İsrâ","الإسراء",111,15,282],["Kehf","الكهف",110,15,293],["Meryem","مريم",98,16,305],["Tâhâ","طه",135,16,312],
+["Enbiyâ","الأنبياء",112,17,322],["Hac","الحج",78,17,332],["Mü'minûn","المؤمنون",118,18,342],["Nûr","النور",64,18,350],
+["Furkân","الفرقان",77,18,359],["Şuarâ","الشعراء",227,19,367],["Neml","النمل",93,19,377],["Kasas","القصص",88,20,385],
+["Ankebût","العنكبوت",69,20,396],["Rûm","الروم",60,21,404],["Lokmân","لقمان",34,21,411],["Secde","السجدة",30,21,415],
+["Ahzâb","الأحزاب",73,21,418],["Sebe'","سبأ",54,22,428],["Fâtır","فاطر",45,22,434],["Yâsîn","يس",83,22,440],
+["Sâffât","الصافات",182,23,446],["Sâd","ص",88,23,453],["Zümer","الزمر",75,23,458],["Mü'min","غافر",85,24,467],
+["Fussilet","فصلت",54,24,477],["Şûrâ","الشورى",53,25,483],["Zuhruf","الزخرف",89,25,489],["Duhân","الدخان",59,25,496],
+["Câsiye","الجاثية",37,25,499],["Ahkâf","الأحقاف",35,26,502],["Muhammed","محمد",38,26,507],["Fetih","الفتح",29,26,511],
+["Hucurât","الحجرات",18,26,515],["Kâf","ق",45,26,518],["Zâriyât","الذاريات",60,26,520],["Tûr","الطور",49,27,523],
+["Necm","النجم",62,27,526],["Kamer","القمر",55,27,528],["Rahmân","الرحمن",78,27,531],["Vâkıa","الواقعة",96,27,534],
+["Hadîd","الحديد",29,27,537],["Mücâdele","المجادلة",22,28,542],["Haşr","الحشر",24,28,545],["Mümtehine","الممتحنة",13,28,549],
+["Saf","الصف",14,28,551],["Cuma","الجمعة",11,28,553],["Münâfikûn","المنافقون",11,28,554],["Teğâbün","التغابن",18,28,556],
+["Talâk","الطلاق",12,28,558],["Tahrîm","التحريم",12,28,560],["Mülk","الملك",30,29,562],["Kalem","القلم",52,29,564],
+["Hâkka","الحاقة",52,29,566],["Meâric","المعارج",44,29,568],["Nûh","نوح",28,29,570],["Cin","الجن",28,29,572],
+["Müzzemmil","المزمل",20,29,574],["Müddessir","المدثر",56,29,575],["Kıyâme","القيامة",40,29,577],["İnsân","الإنسان",31,29,578],
+["Mürselât","المرسلات",50,29,580],["Nebe'","النبأ",40,30,582],["Nâziât","النازعات",46,30,583],["Abese","عبس",42,30,585],
+["Tekvîr","التكوير",29,30,586],["İnfitâr","الانفطار",19,30,587],["Mutaffifîn","المطففين",36,30,587],["İnşikâk","الانشقاق",25,30,589],
+["Bürûc","البروج",22,30,590],["Târık","الطارق",17,30,591],["A'lâ","الأعلى",19,30,591],["Gâşiye","الغاشية",26,30,592],
+["Fecr","الفجر",30,30,593],["Beled","البلد",20,30,594],["Şems","الشمس",15,30,595],["Leyl","الليل",21,30,595],
+["Duhâ","الضحى",11,30,596],["İnşirâh","الشرح",8,30,596],["Tîn","التين",8,30,597],["Alak","العلق",19,30,597],
+["Kadir","القدر",5,30,598],["Beyyine","البينة",8,30,598],["Zilzâl","الزلزلة",8,30,599],["Âdiyât","العاديات",11,30,599],
+["Kâria","القارعة",11,30,600],["Tekâsür","التكاثر",8,30,600],["Asr","العصر",3,30,601],["Hümeze","الهمزة",9,30,601],
+["Fîl","الفيل",5,30,601],["Kureyş","قريش",4,30,602],["Mâûn","الماعون",7,30,602],["Kevser","الكوثر",3,30,602],
+["Kâfirûn","الكافرون",6,30,603],["Nasr","النصر",3,30,603],["Tebbet","المسد",5,30,603],["İhlâs","الإخلاص",4,30,604],
+["Felak","الفلق",5,30,604],["Nâs","الناس",6,30,604]
+];
+const METHOD_KEYS = ["osmanli", "pakistan", "cuz", "sure"];
+const PAGES = 600;
+const NF1 = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
+const fmt1 = x => NF1.format(x);
+const cuzOf = p => Math.ceil(p / 20);
+const kOf = p => p - 20 * (Math.ceil(p / 20) - 1);
+const cuzFirst = c => 20 * (c - 1) + 1;
+const cuzLast = c => 20 * c;
+const isMem = (pg, p) => pg.charCodeAt(p - 1) === 49;
+function setPages(pg, list, on) {
+  if (!list || !list.length) return pg;
+  const a = pg.split(""), ch = on ? "1" : "0";
+  for (const p of list) if (p >= 1 && p <= PAGES) a[p - 1] = ch;
+  return a.join("");
+}
+function memCount(pg) { let n = 0; for (let i = 0; i < PAGES; i++) if (pg.charCodeAt(i) === 49) n++; return n; }
+function cuzMem(pg, c) { let n = 0; for (let p = cuzFirst(c); p <= cuzLast(c); p++) if (isMem(pg, p)) n++; return n; }
+function completedCuz(pg) { const r = []; for (let c = 1; c <= 30; c++) if (cuzMem(pg, c) === 20) r.push(c); return r; }
+function firstUnmem(pg) { const i = pg.indexOf("0"); return i < 0 ? 0 : i + 1; }
+function seq(a, b) { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; }
+function toRanges(list) {
+  const s = Array.from(new Set(list)).sort((x, y) => x - y), out = [];
+  for (const p of s) { const l = out[out.length - 1]; if (l && p === l[1] + 1) l[1] = p; else out.push([p, p]); }
+  return out;
+}
+function rangesCount(rg) { let n = 0; for (const [a, b] of rg) n += b - a + 1; return n; }
+function rangesPages(rg) { const r = []; for (const [a, b] of rg) for (let p = a; p <= b; p++) r.push(p); return r; }
+const fmtRange = ([a, b]) => (a === b ? String(a) : a + "–" + b);
+const fmtPages = rg => "s. " + rg.map(fmtRange).join(", ");
+function cuzSpan(rg) { const a = cuzOf(rg[0][0]), b = cuzOf(rg[rg.length - 1][1]); return (a === b ? a : a + "–" + b) + ". cüz"; }
+function wholeCuz(rg) { if (rg.length !== 1) return null; const [a, b] = rg[0]; return kOf(a) === 1 && kOf(b) === 20 ? [cuzOf(a), cuzOf(b)] : null; }
+function kRange(list) { return toRanges(list.map(kOf)).map(fmtRange).join(", ") + (list.length > 1 ? ". sayfalar" : ". sayfa"); }
+function mkItem(kind, tag, main, sub, rg, fx, extra) {
+  const it = { kind, tag, main, sub, rg: rg || [], n: rangesCount(rg || []), done: false };
+  if (fx) it.fx = fx;
+  if (extra) Object.assign(it, extra);
+  return it;
+}
+
+function defaultState(method, today) {
+  return {
+    v: 1, method, startedAt: today, pages: "0".repeat(PAGES),
+    osm: { ptr: 1, per: 1, h: 1 },
+    pak: { per: 1, men: "auto", m: 0 },
+    cuz: { post: 0 },
+    sure: { ay: new Array(114).fill(0), cur: 0, dir: "desc", rev: 5, rp: 0, last: 0 }
+  };
+}
+function normalizeState(o, today) {
+  if (!o || typeof o !== "object" || METHOD_KEYS.indexOf(o.method) < 0) return null;
+  const d = defaultState(o.method, typeof o.startedAt === "string" ? o.startedAt : today);
+  const st = Object.assign({}, d, o);
+  st.pages = typeof o.pages === "string" && o.pages.length === PAGES && /^[01]+$/.test(o.pages) ? o.pages : d.pages;
+  st.osm = Object.assign({}, d.osm, o.osm || {});
+  st.pak = Object.assign({}, d.pak, o.pak || {});
+  st.cuz = Object.assign({}, d.cuz, o.cuz || {});
+  st.sure = Object.assign({}, d.sure, o.sure || {});
+  const ay = Array.isArray(st.sure.ay) ? st.sure.ay : [];
+  st.sure.ay = SURAHS.map((s, i) => Math.max(0, Math.min(s[2], Math.floor(Number(ay[i]) || 0))));
+  return st;
+}
+
+/* ---- Osmanlı Usulü: her cüzün sonundan geriye, 30 cüz sırayla; çiğ + pişmiş ---- */
+function osmFind(st) {
+  const per = Math.max(1, st.osm.per | 0), ptr = Math.min(30, Math.max(1, st.osm.ptr | 0));
+  for (let i = 0; i < 30; i++) {
+    const c = ((ptr - 1 + i) % 30) + 1, nw = [];
+    for (let p = cuzLast(c); p >= cuzFirst(c) && nw.length < per; p--) if (!isMem(st.pages, p)) nw.push(p);
+    if (nw.length) return { c, nw: nw.sort((a, b) => a - b) };
+  }
+  return null;
+}
+function planOsmanli(st, extra) {
+  const f = osmFind(st);
+  if (!f) {
+    if (extra) return { items: [], complete: true };
+    const h = Math.min(30, Math.max(1, st.osm.h | 0)), rg = [[cuzFirst(h), cuzLast(h)]];
+    return { complete: true, items: [mkItem("rev", "Hatim tekrarı", h + ". cüz", fmtPages(rg) + " · 20 sayfa", rg, { ptr: ["osm", "h", (h % 30) + 1] })] };
+  }
+  const c = f.c, nw = f.nw, nrg = toRanges(nw), last = nw[nw.length - 1];
+  const tur = Math.max(1, st.osm.per | 0) === 1 ? " · " + (21 - kOf(nw[0])) + ". tur" : "";
+  const items = [mkItem("new", "Çiğ", fmtPages(nrg), c + ". cüz · " + kRange(nw) + tur, nrg, { add: nw, ptr: ["osm", "ptr", (c % 30) + 1] })];
+  const pis = [];
+  for (let p = last + 1; p <= cuzLast(c); p++) if (isMem(st.pages, p)) pis.push(p);
+  if (pis.length) { const prg = toRanges(pis); items.push(mkItem("rev", "Pişmiş", fmtPages(prg), c + ". cüz · " + kRange(pis), prg)); }
+  return { items, complete: false };
+}
+
+/* ---- Pakistan Usulü: sırayla; sebak + sebki (cüz başından) + menzil (biten cüzler) ---- */
+function menzilAmount(st, nDone) {
+  if (st.pak.men === "auto") return nDone <= 0 ? 0 : nDone <= 3 ? 5 : nDone <= 7 ? 10 : nDone <= 15 ? 20 : nDone <= 20 ? 30 : 60;
+  return Math.max(1, Number(st.pak.men) || 20);
+}
+function menzilChunk(st, curC) {
+  const done = [];
+  for (let c = 1; c <= 30; c++) if (c !== curC && cuzMem(st.pages, c) === 20) done.push(c);
+  if (!done.length) return null;
+  const amt = menzilAmount(st, done.length), sq = [];
+  for (const c of done) for (let p = cuzFirst(c); p <= cuzLast(c); p++) sq.push(p);
+  let idx = sq.findIndex(p => p >= (st.pak.m | 0));
+  if (idx < 0) idx = 0;
+  const chunk = sq.slice(idx, idx + amt), next = idx + amt < sq.length ? sq[idx + amt] : sq[0];
+  const rg = toRanges(chunk), wc = wholeCuz(rg);
+  const main = wc ? (wc[0] === wc[1] ? wc[0] : wc[0] + "–" + wc[1]) + ". cüz" : fmtPages(rg);
+  const sub = (wc ? fmtPages(rg) : cuzSpan(rg)) + " · " + chunk.length + " sayfa";
+  return { rg, main, sub, next };
+}
+function planPakistan(st, extra) {
+  const per = Math.max(1, st.pak.per | 0), first = firstUnmem(st.pages), items = [];
+  let c = 0;
+  if (first) {
+    c = cuzOf(first);
+    const nw = [];
+    for (let p = first; p <= cuzLast(c) && nw.length < per && !isMem(st.pages, p); p++) nw.push(p);
+    const nrg = toRanges(nw);
+    items.push(mkItem("new", "Sebak", fmtPages(nrg), c + ". cüz · " + kRange(nw), nrg, { add: nw }));
+    if (!extra) {
+      const sb = [];
+      for (let p = cuzFirst(c); p < first; p++) if (isMem(st.pages, p)) sb.push(p);
+      if (sb.length) { const srg = toRanges(sb); items.push(mkItem("rev", "Sebki", fmtPages(srg), c + ". cüz · baştan " + sb.length + " sayfa", srg)); }
+    }
+  }
+  if (!extra) { const m = menzilChunk(st, c); if (m) items.push(mkItem("rev", "Menzil", m.main, m.sub, m.rg, { ptr: ["pak", "m", m.next] })); }
+  return { items, complete: !first };
+}
+
+/* ---- Cüz Usulü: sırayla bir sayfa; k. sayfada k cüz geri; 21–30 yan sırada 10'ar sayfa, tersten ---- */
+function cuzReview(n, k) {
+  const main = n <= 21 ? (n - k >= 1 ? n - k : 0) : 21 - k;
+  const m = n - 21;
+  let side = null;
+  if (m >= 1 && k <= 2 * m) { const b = 2 * m - k + 1; side = [400 + 10 * (b - 1) + 1, 400 + 10 * b]; }
+  return { main, side };
+}
+function cuzItems(n, k, fx) {
+  const r = cuzReview(n, k), out = [];
+  if (r.main >= 1) { const rg = [[cuzFirst(r.main), cuzLast(r.main)]]; out.push(mkItem("rev", "Ana sıra", r.main + ". cüz", fmtPages(rg) + " · 20 sayfa", rg, fx)); }
+  if (r.side) { const rg = [r.side]; out.push(mkItem("rev", "Yan sıra", fmtPages(rg), cuzOf(r.side[0]) + ". cüz · " + (kOf(r.side[0]) === 1 ? "ilk" : "son") + " 10 sayfa", rg)); }
+  return out;
+}
+function planCuz(st, extra) {
+  const first = firstUnmem(st.pages);
+  if (first) {
+    const n = cuzOf(first), k = kOf(first);
+    return { complete: false, items: [mkItem("new", "Ezber", "s. " + first, n + ". cüz · " + k + ". sayfa", [[first, first]], { add: [first] })].concat(cuzItems(n, k, null)) };
+  }
+  if (extra) return { items: [], complete: true };
+  const post = Math.max(0, st.cuz.post | 0), d = (post % 20) + 1;
+  return { complete: true, post: d, items: cuzItems(31, d, { ptr: ["cuz", "post", post + 1] }) };
+}
+
+/* ---- Sure Sure: 114 sureden seçerek; ayet ayet ilerleme, sıra tekrarı ---- */
+const SW = (function () {
+  const n = SURAHS.length, pos = new Array(n + 1), byPage = {};
+  SURAHS.forEach((s, i) => { (byPage[s[4]] = byPage[s[4]] || []).push(i); });
+  Object.keys(byPage).forEach(pg => { const arr = byPage[pg]; arr.forEach((i, r) => { pos[i] = Number(pg) + (r + 1) / (arr.length + 1); }); });
+  pos[n] = 605;
+  const w = []; let tot = 0;
+  for (let i = 0; i < n; i++) { w[i] = pos[i + 1] - pos[i]; tot += w[i]; }
+  return w.map(x => x * PAGES / tot);
+})();
+const sureTotal = s => SURAHS[s - 1][2];
+const sureDone = (st, s) => st.sure.ay[s - 1] >= sureTotal(s);
+function sureSuggest(st) {
+  const asc = st.sure.dir === "asc";
+  for (let i = 0; i < 114; i++) { const s = asc ? i + 1 : 114 - i; if (!sureDone(st, s)) return s; }
+  return 0;
+}
+function sureWeightDone(st) { let w = 0; for (let i = 0; i < 114; i++) w += SW[i] * Math.min(1, st.sure.ay[i] / SURAHS[i][2]); return w; }
+function sureAllDone(st) { return st.sure.ay.every((a, i) => a >= SURAHS[i][2]); }
+function sureChunk(st, skip) {
+  const budget = Number(st.sure.rev) || 0;
+  if (!budget) return null;
+  const done = [];
+  for (let s = 1; s <= 114; s++) if (s !== st.sure.cur && s !== skip && sureDone(st, s)) done.push(s);
+  if (!done.length) return null;
+  let idx = done.findIndex(s => s > (st.sure.rp | 0));
+  if (idx < 0) idx = 0;
+  const chunk = []; let w = 0;
+  for (let i = 0; i < done.length; i++) { const s = done[(idx + i) % done.length]; chunk.push(s); w += SW[s - 1]; if (w >= budget) break; }
+  return { chunk, w, next: chunk[chunk.length - 1] };
+}
+function sureListText(list) {
+  const names = list.map(s => SURAHS[s - 1][0]);
+  if (list.length <= 3) return names.join(" · ");
+  const consecutive = list.every((s, i) => i === 0 || s === list[i - 1] + 1);
+  return consecutive ? names[0] + " – " + names[names.length - 1] : names.slice(0, 3).join(" · ") + " +" + (list.length - 3);
+}
+function planSure(st, extra) {
+  const items = [], complete = sureAllDone(st);
+  if (extra) return { items, complete };
+  const cur = st.sure.cur;
+  let skip = 0;
+  if (cur && st.sure.ay[cur - 1] > 0 && !sureDone(st, cur)) {
+    const a = st.sure.ay[cur - 1];
+    items.push(mkItem("rev", "Yakın tekrar", SURAHS[cur - 1][0], "1–" + a + ". ayetler", [], null, { sr: [cur], w: SW[cur - 1] * a / sureTotal(cur) }));
+  } else if (st.sure.last && st.sure.last !== cur && sureDone(st, st.sure.last)) {
+    const s = st.sure.last; skip = s;
+    items.push(mkItem("rev", "Yakın tekrar", SURAHS[s - 1][0], "Son biten sure · " + sureTotal(s) + " ayet", [], null, { sr: [s], w: SW[s - 1] }));
+  }
+  const ch = sureChunk(st, skip);
+  if (ch) items.push(mkItem("rev", "Sıra tekrarı", sureListText(ch.chunk), ch.chunk.length + " sure · ≈" + fmt1(ch.w) + " sayfa", [], { ptr: ["sure", "rp", ch.next] }, { sr: ch.chunk, w: ch.w }));
+  return { items, complete };
+}
+
+function planLesson(st, extra) {
+  const f = { osmanli: planOsmanli, pakistan: planPakistan, cuz: planCuz, sure: planSure }[st.method];
+  return f ? f(st, !!extra) : { items: [], complete: false };
+}
+function applyFx(st, it) {
+  const fx = it.fx;
+  it.applied = {};
+  if (!fx) return;
+  if (fx.add) { const added = fx.add.filter(p => !isMem(st.pages, p)); st.pages = setPages(st.pages, added, true); it.applied.added = added; }
+  if (fx.ptr) { const ns = fx.ptr[0], key = fx.ptr[1]; it.applied.before = st[ns][key]; st[ns][key] = fx.ptr[2]; }
+}
+function revertFx(st, it) {
+  const fx = it.fx, ap = it.applied || {};
+  if (fx && fx.add && ap.added) st.pages = setPages(st.pages, ap.added, false);
+  if (fx && fx.ptr && ap.before !== undefined) st[fx.ptr[0]][fx.ptr[1]] = ap.before;
+  it.applied = null;
+}
+// Onboarding canlandırması için: usulü baştan sona, her gün dersi ve tekrarı yapılmış gibi yürütür.
+function* simulate(method) {
+  const st = defaultState(method, "2000-01-01");
+  if (method === "sure") st.sure.cur = sureSuggest(st);
+  for (let step = 1; step < 3000; step++) {
+    const plan = planLesson(st, false);
+    const done = method === "sure" ? !st.sure.cur : plan.complete;
+    yield { st, plan, step, done };
+    if (done) return;
+    for (const it of plan.items) applyFx(st, it);
+    if (method === "sure") { const s = st.sure.cur; st.sure.ay[s - 1] = sureTotal(s); st.sure.last = s; st.sure.cur = sureSuggest(st); }
+  }
+}
+/*ENGINE-END*/
+
+/* ================= UI ================= */
+const METHODS = {
+  osmanli: { name: "Osmanlı Usulü", to: "Osmanlı Usulüne geç",
+    desc: "Her cüzün son sayfasından başlanır ve geriye doğru gidilir. Her gün sıradaki cüzden bir yeni sayfa (çiğ) ezberlenir; o cüzün daha önce ezberlenen sayfaları (pişmiş) da birlikte okunur. 30 günde bir tur döner.",
+    cap: "Her sütun bir cüz, her kare bir sayfa. Ezber her cüzün son sayfasından başlayıp katman katman yukarı çıkar; açık altın kareler o günün pişmiş sayfaları." },
+  pakistan: { name: "Pakistan Usulü", to: "Pakistan Usulüne geç",
+    desc: "Baştan sona sırayla gidilir. Her gün üç parça okunur: sebak (yeni ders), sebki (içinde bulunduğun cüzün başından bugüne kadarki kısmı) ve menzil (biten eski cüzlerden sıradaki parça).",
+    cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o günün sebki ve menzili." },
+  cuz: { name: "Cüz Usulü", to: "Cüz Usulüne geç",
+    desc: "Her gün sırayla bir yeni sayfa ezberlenir. Cüzün kaçıncı sayfasındaysan o kadar cüz geri gidip o cüzü tekrar edersin. 22. cüzden itibaren 21–30. cüzler 10'ar sayfalık yan sırayla eklenir; günlük tekrar en fazla 30 sayfadır.",
+    cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o gün tekrar edilen cüz ve yan sıra parçası." },
+  sure: { name: "Sure Sure", to: "Sure Sure usulüne geç",
+    desc: "114 sure arasından istediğin sureyi seçip ezberlersin. İlerleme ayet ayet tutulur; ezberlediğin sureler her gün sırayla tekrar edilir.",
+    cap: "Her kare bir sure. Ezber Nâs'tan geriye doğru ilerler; açık altın kareler o günün tekrarı." }
+};
+const BANNER = {
+  local: "Giriş yapmadığın için ilerlemen yalnızca bu tarayıcıda saklanıyor.",
+  memory: "Bu tarayıcı kayıt tutmaya izin vermiyor. Sayfayı kapatmadan önce Ayarlar'dan yedeğini kopyala.",
+  refused: "Bu sayfaya kayıt yapma iznin yok. İlerlemen bundan sonra yalnızca bu tarayıcıda saklanacak.",
+  lost: "Hesap kayıtlarına şu an ulaşılamıyor. İlerlemen bundan sonra bu tarayıcıda saklanacak.",
+  unreachable: "Kayıtlarına şu an ulaşılamıyor. Bağlantı gelince kendiliğinden yüklenecek.",
+  quota: "Kayıt alanı doldu, yeni kayıtlar kaydedilemiyor. Ayarlar'dan yedeğini kopyala."
+};
+const ICON = {
+  today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.6C10 5.1 7 4.6 3.5 5.1v12.2c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5.1C17 4.6 14 5.1 12 6.6z"/><path d="M12 6.6v12.2"/></svg>',
+  map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.3"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.3"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.3"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.3"/></svg>',
+  set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9.5M18.5 7H20M4 17h3.5M12.5 17H20"/><circle cx="16" cy="7" r="2.3"/><circle cx="10" cy="17" r="2.3"/></svg>'
+};
+
+const NF = new Intl.NumberFormat("tr-TR");
+const fmtPct = x => "%" + NF1.format(Math.round(x * 10) / 10);
+const DF_LONG = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", weekday: "long" });
+const DF_SHORT = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", weekday: "short" });
+const DF_DM = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+const DF_MY = new Intl.DateTimeFormat("tr-TR", { month: "long", year: "numeric" });
+const DF_MON = new Intl.DateTimeFormat("tr-TR", { month: "short" });
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clampInt = (v, lo, hi) => { const n = parseInt(v, 10); return Math.max(lo, Math.min(hi, Number.isFinite(n) ? n : lo)); };
+const $ = s => document.querySelector(s);
+// Android uygulamasının içinde mi açıldı? (MainActivity bu köprüyü ve kullanıcı aracısı ekini ekler)
+const APP = typeof window.HafizlikAndroid === "object" || /HafizlikApp/.test(navigator.userAgent);
+
+function dkey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function parseKey(k) { const a = k.split("-").map(Number); return new Date(a[0], a[1] - 1, a[2]); }
+function addDays(k, n) { const d = parseKey(k); d.setDate(d.getDate() + n); return dkey(d); }
+function daysBetween(a, b) { return Math.round((parseKey(b) - parseKey(a)) / 86400000); }
+
+const S = {
+  mode: "loading", state: null, days: {}, today: dkey(new Date()), banner: "",
+  ui: { tab: "bugun", onbSel: "osmanli", sheet: null, ayInput: null, detailAy: null, histMore: 0, confirm: null, pos: {}, backupText: "", restoreOpen: false, restoreText: "", restoreErr: "" }
+};
+
+/* ---------------- kayıt ---------------- */
+const LS_KEY = "hafizlik.v1";
+const Store = { kind: "none", stateRef: null, monthsCol: null, unsub: [], dirty: new Set(), writers: new Map(), loaded: { state: false, months: false }, timer: 0 };
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function lsRead() { try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+function lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify({ state: S.state, days: S.days })); return true; } catch (e) { return false; } }
+function lsWorks() { try { localStorage.setItem("hafizlik.t", "1"); localStorage.removeItem("hafizlik.t"); return true; } catch (e) { return false; } }
+
+function sanitizeDays(o) {
+  const out = {};
+  if (!o || typeof o !== "object") return out;
+  Object.keys(o).forEach(k => {
+    const r = o[k];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !r || typeof r !== "object" || !Array.isArray(r.lessons)) return;
+    const lessons = r.lessons.filter(L => L && Array.isArray(L.items)).map(L => Object.assign({}, L, {
+      items: L.items.filter(i => i && typeof i === "object" && typeof i.main === "string").map(i => Object.assign({}, i, { rg: Array.isArray(i.rg) ? i.rg : [] }))
+    }));
+    out[k] = { date: k, method: METHOD_KEYS.indexOf(r.method) >= 0 ? r.method : "cuz", lessons: lessons.length ? lessons : [{ items: [], complete: false }], entries: Array.isArray(r.entries) ? r.entries : [] };
+  });
+  return out;
+}
+
+function startLocal(reason) {
+  Store.kind = lsWorks() ? "local" : "memory";
+  if (!S.state) {
+    const saved = Store.kind === "local" ? lsRead() : null;
+    if (saved) { S.state = normalizeState(saved.state, S.today); S.days = sanitizeDays(saved.days); }
+  } else saveLocal();
+  S.banner = Store.kind === "memory" ? "memory" : APP && (!reason || reason === "local") ? "" : reason || "local";
+  S.mode = "ready";
+  render();
+}
+function startDb(db, uid) {
+  Store.kind = "db";
+  Store.stateRef = db.doc("data/users/" + uid + "/state");
+  Store.monthsCol = Store.stateRef.collection("months");
+  const sure = { state: false, months: false };
+  Store.timer = setTimeout(() => { if (!(sure.state && sure.months)) { S.banner = "unreachable"; render(); } }, 10000);
+  const settle = () => { if (sure.state && sure.months) { clearTimeout(Store.timer); if (S.banner === "unreachable") { S.banner = ""; render(); } } };
+  const ready = changed => {
+    if (S.mode === "loading" && Store.loaded.state && Store.loaded.months) { S.mode = "ready"; render(); }
+    else if (changed && S.mode === "ready") render();
+  };
+  Store.unsub.push(Store.stateRef.onSnapshot(snap => {
+    Store.loaded.state = true;
+    if (!snap.metadata.fromCache) { sure.state = true; settle(); }
+    let changed = false;
+    if (!Store.dirty.has("state")) {
+      const data = snap.exists ? snap.data() : null;
+      const next = data ? normalizeState(clone(data), S.today) : null;
+      if (JSON.stringify(next) !== JSON.stringify(S.state)) { S.state = next; changed = true; }
+    }
+    ready(changed);
+  }, dbFailed));
+  Store.unsub.push(Store.monthsCol.onSnapshot(qs => {
+    Store.loaded.months = true;
+    if (!qs.metadata.fromCache) { sure.months = true; settle(); }
+    let changed = false;
+    qs.docs.forEach(d => {
+      if (Store.dirty.has("m:" + d.id)) return;
+      const days = sanitizeDays(clone((d.data() || {}).days || {}));
+      const cur = {};
+      Object.keys(S.days).forEach(k => { if (k.slice(0, 7) === d.id) cur[k] = S.days[k]; });
+      if (JSON.stringify(cur) !== JSON.stringify(days)) { Object.keys(cur).forEach(k => delete S.days[k]); Object.assign(S.days, days); changed = true; }
+    });
+    qs.docChanges().forEach(ch => {
+      if (ch.type !== "removed" || Store.dirty.has("m:" + ch.doc.id)) return;
+      Object.keys(S.days).forEach(k => { if (k.slice(0, 7) === ch.doc.id) { delete S.days[k]; changed = true; } });
+    });
+    ready(changed);
+  }, dbFailed));
+}
+function dbFailed(err) {
+  if (Store.kind !== "db") return;
+  Store.unsub.forEach(u => { try { u(); } catch (e) {} });
+  Store.unsub = []; clearTimeout(Store.timer);
+  startLocal(err && err.code === "invalid_argument" ? "refused" : "lost");
+}
+function queueWrite(key, task) {
+  let w = Store.writers.get(key);
+  if (!w) { w = { busy: false, task: null, timer: 0, retried: false }; Store.writers.set(key, w); }
+  w.task = task; Store.dirty.add(key);
+  clearTimeout(w.timer);
+  w.timer = setTimeout(() => runWrite(key), 300);
+}
+async function runWrite(key) {
+  const w = Store.writers.get(key);
+  if (!w || w.busy || !w.task) return;
+  const task = w.task; w.task = null; w.busy = true;
+  try { await task(); w.retried = false; }
+  catch (e) {
+    w.busy = false;
+    const code = e && e.code;
+    if ((code === "unavailable" || !code) && !w.retried) { w.retried = true; if (!w.task) w.task = task; w.timer = setTimeout(() => runWrite(key), 1000 + Math.random() * 1500); return; }
+    Store.dirty.delete(key);
+    if (code === "quota_exceeded") { S.banner = "quota"; render(); } else dbFailed({ code });
+    return;
+  }
+  w.busy = false;
+  if (w.task) runWrite(key); else Store.dirty.delete(key);
+}
+function monthDays(m) { const o = {}; Object.keys(S.days).forEach(k => { if (k.slice(0, 7) === m) o[k] = S.days[k]; }); return o; }
+function saveLocal() {
+  if (Store.kind !== "local") return;
+  clearTimeout(saveLocal.t);
+  saveLocal.t = setTimeout(flushLocal, 250);
+}
+function flushLocal() {
+  if (!saveLocal.t) return;
+  clearTimeout(saveLocal.t); saveLocal.t = 0;
+  if (Store.kind === "local" && !lsWrite()) { Store.kind = "memory"; S.banner = "memory"; render(); }
+}
+function saveState() {
+  if (Store.kind === "db") queueWrite("state", () => (S.state ? Store.stateRef.set(clone(S.state)) : Store.stateRef.delete()));
+  else saveLocal();
+}
+function saveDay(t) {
+  const m = t.slice(0, 7);
+  if (Store.kind === "db") queueWrite("m:" + m, () => { const days = monthDays(m); return Object.keys(days).length ? Store.monthsCol.doc(m).set({ days: clone(days) }) : Store.monthsCol.doc(m).delete(); });
+  else saveLocal();
+}
+
+/* ---------------- günlük kayıt ---------------- */
+function todayRec() {
+  const rec = S.days[S.today];
+  if (rec) return { rec, eph: false };
+  return { rec: { date: S.today, method: S.state.method, lessons: [planLesson(S.state, false)], entries: [] }, eph: true };
+}
+function materialize() { if (!S.days[S.today]) S.days[S.today] = todayRec().rec; return S.days[S.today]; }
+function dayStatus(rec) {
+  if (!rec) return "";
+  let nw = false, any = false;
+  (rec.lessons || []).forEach(L => L.items.forEach(it => { if (it.done) { any = true; if (it.kind === "new") nw = true; } }));
+  if (rec.entries && rec.entries.length) { any = true; nw = true; }
+  return nw ? "e" : any ? "t" : "";
+}
+function dropIdleToday() { const r = S.days[S.today]; if (r && !dayStatus(r)) { delete S.days[S.today]; saveDay(S.today); } }
+
+let toastTimer = 0;
+function toast(msg) {
+  const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+function toggleItem(li, ii) {
+  const st = S.state, rec = materialize(), L = rec.lessons[li], it = L && L.items[ii];
+  if (!it) return;
+  if (!it.done) {
+    const before = completedCuz(st.pages), hadAll = memCount(st.pages) === PAGES;
+    applyFx(st, it); it.done = true;
+    const fresh = completedCuz(st.pages).filter(c => before.indexOf(c) < 0);
+    if (!hadAll && memCount(st.pages) === PAGES) toast("Hafızlık tamamlandı. Hayırlı olsun!");
+    else if (fresh.length) toast(fresh.join(", ") + ". cüz tamamlandı.");
+  } else {
+    if (it.kind === "new" && li < rec.lessons.length - 1) { toast("Önce sonraki dersi geri al."); return; }
+    revertFx(st, it); it.done = false;
+  }
+  saveState(); saveDay(S.today); render();
+}
+function canAddLesson(rec) {
+  const last = rec.lessons[rec.lessons.length - 1], nw = last && last.items.find(i => i.kind === "new");
+  return !!(nw && nw.done && planLesson(S.state, true).items.some(i => i.kind === "new"));
+}
+function addLesson() {
+  const rec = materialize();
+  if (!canAddLesson(rec)) return;
+  rec.lessons.push(planLesson(S.state, true));
+  saveDay(S.today); render();
+}
+function removeLesson(li) {
+  const rec = S.days[S.today];
+  if (!rec || li !== rec.lessons.length - 1 || li === 0 || rec.lessons[li].items.some(i => i.done)) return;
+  rec.lessons.pop(); saveDay(S.today); render();
+}
+function saveSureEntry(to) {
+  const st = S.state, s = st.sure.cur;
+  if (!s) return;
+  const total = sureTotal(s), prev = st.sure.ay[s - 1];
+  to = Math.min(total, Math.floor(Number(to) || 0));
+  if (to <= prev) { toast("Ayet numarası " + (prev + 1) + " ile " + total + " arasında olmalı."); return; }
+  const rec = materialize();
+  const e = { s, from: prev + 1, to, prev, last: st.sure.last, cur: s };
+  st.sure.ay[s - 1] = to;
+  if (to >= total) { st.sure.last = s; st.sure.cur = sureSuggest(st); toast(SURAHS[s - 1][0] + " suresi tamamlandı."); }
+  rec.entries = rec.entries || []; rec.entries.push(e);
+  S.ui.ayInput = null;
+  saveState(); saveDay(S.today); render();
+}
+function undoSureEntry() {
+  const rec = S.days[S.today], e = rec && rec.entries && rec.entries[rec.entries.length - 1], st = S.state;
+  if (!e) return;
+  if (st.sure.ay[e.s - 1] !== e.to) { toast("Bu kayıt sonradan değişti, geri alınamıyor."); return; }
+  st.sure.ay[e.s - 1] = e.prev; st.sure.last = e.last; st.sure.cur = e.cur;
+  rec.entries.pop(); S.ui.ayInput = null;
+  saveState(); saveDay(S.today); render();
+}
+
+/* ---------------- görünümler ---------------- */
+function render() {
+  const app = $("#app");
+  if (S.mode === "loading") { app.innerHTML = loadingHtml(); return; }
+  if (!S.state) { if (!app.querySelector(".onb")) { app.innerHTML = onboardingHtml(); demoStart(S.ui.onbSel); } return; }
+  if (!S.ui.sheet || S.ui.sheet.type !== "method") demoStop();
+  app.innerHTML = shellHtml();
+}
+function loadingHtml() {
+  const slow = S.banner === "unreachable";
+  return `<div class="loading wrap"><span class="wordmark">Hafızlık</span><p>${esc(slow ? BANNER.unreachable : "Kayıtların yükleniyor…")}</p>${slow ? `<div><button class="btn btn-line" data-act="go-local">Beklemeden bu cihazda başla</button></div>` : ""}</div>`;
+}
+function shellHtml() {
+  const st = S.state, tab = S.ui.tab;
+  const tabs = [["bugun", "Bugün", ICON.today], ["ilerleme", "İlerleme", ICON.map], ["ayarlar", "Ayarlar", ICON.set]]
+    .map(t => `<button class="tab" data-act="tab" data-v="${t[0]}"${tab === t[0] ? ' aria-current="page"' : ""}>${t[2]}<span>${t[1]}</span></button>`).join("");
+  const view = tab === "ilerleme" ? viewProgress() : tab === "ayarlar" ? viewSettings() : viewToday();
+  const showBanner = S.banner && (S.banner !== "local" || tab === "bugun");
+  return `<header class="top wrap"><div class="brand"><span class="wordmark">Hafızlık</span><span class="mchip">${esc(METHODS[st.method].name)}</span></div><nav class="tabs" aria-label="Bölümler">${tabs}</nav></header>
+<main class="view wrap">${showBanner ? `<p class="banner">${esc(BANNER[S.banner] || "")}</p>` : ""}${view}</main>`;
+}
+
+/* --- Bugün --- */
+function viewToday() {
+  const st = S.state, rec = todayRec().rec, live = rec.method === st.method;
+  const dayNo = daysBetween(st.startedAt, S.today) + 1;
+  let h = `<div class="dateline"><span>${esc(DF_LONG.format(parseKey(S.today)))}</span>${dayNo >= 1 ? `<span class="dayno">${NF.format(dayNo)}. gün</span>` : ""}</div>`;
+  if (!live) h += `<p class="banner">Bugünkü ders ${esc(METHODS[rec.method].name)} ile planlandı. Yarından itibaren ${esc(METHODS[st.method].name)} geçerli.</p>`;
+  return h + (rec.method === "sure" ? sureTodayHtml(rec, live) : pageTodayHtml(rec, live));
+}
+function itemHtml(it, li, ii) {
+  return `<button class="item${it.done ? " is-done" : ""}" data-act="toggle" data-l="${li}" data-i="${ii}" aria-pressed="${it.done ? "true" : "false"}"><span class="tick" aria-hidden="true"></span><span class="item-body"><span class="item-tag">${esc(it.tag)}</span><span class="item-main">${esc(it.main)}</span><span class="item-sub">${esc(it.sub)}</span></span></button>`;
+}
+function reviewBlock(rec, empty) {
+  const L0 = rec.lessons[0], revs = [];
+  L0.items.forEach((it, i) => { if (it.kind === "rev") revs.push(itemHtml(it, 0, i)); });
+  return `<section class="block"><h2 class="label">Bugünkü tekrar</h2>${revs.length ? `<div class="items">${revs.join("")}</div>` : `<p class="empty">${esc(empty)}</p>`}</section>`;
+}
+function emptyText(m) {
+  if (m === "osmanli") return "Bu cüzde henüz pişmiş sayfa yok.";
+  if (m === "pakistan") return "Bugün tekrar yok. Sebki bu cüzün ikinci sayfasında, menzil ilk cüz bitince başlar.";
+  if (m === "sure") return "Henüz tekrar edilecek sure yok.";
+  return "Bugün eski cüz tekrarı yok.";
+}
+function totalsHtml(rec) {
+  let all = 0, done = 0, nNew = 0, nRev = 0, wRev = 0;
+  rec.lessons.forEach(L => L.items.forEach(it => { all++; if (it.done) done++; if (it.kind === "new") nNew += it.n; else { nRev += it.n; wRev += it.w || 0; } }));
+  if (rec.method === "sure") {
+    const ay = (rec.entries || []).reduce((a, e) => a + e.to - e.from + 1, 0);
+    return `<p class="totals">Bugün <b>${ay}</b> ayet ezber${all ? ` · tekrar ≈${fmt1(wRev)} sayfa · <b>${done}/${all}</b> tamam` : ""}</p>`;
+  }
+  if (!all) return "";
+  const parts = [`<b>${done}/${all}</b> tamam`];
+  if (nNew) parts.push(nNew + " sayfa ezber");
+  if (nRev) parts.push(nRev + " sayfa tekrar");
+  return `<p class="totals">${parts.join(" · ")}</p>`;
+}
+function pageTodayHtml(rec, live) {
+  const L0 = rec.lessons[0], ni = L0.items.findIndex(i => i.kind === "new");
+  let h = coverHtml(rec, L0, ni) + reviewBlock(rec, emptyText(rec.method));
+  for (let li = 1; li < rec.lessons.length; li++) {
+    const L = rec.lessons[li], removable = li === rec.lessons.length - 1 && !L.items.some(i => i.done);
+    h += `<section class="block"><div class="block-head"><h2 class="label">${li + 1}. ders</h2>${removable ? `<button class="linkish on-paper" data-act="remove-lesson" data-l="${li}">Bu dersi kaldır</button>` : ""}</div><div class="items">${L.items.map((it, i) => itemHtml(it, li, i)).join("")}</div></section>`;
+  }
+  h += totalsHtml(rec);
+  if (live && canAddLesson(rec)) h += `<div><button class="btn btn-line" data-act="add-lesson">Bir ders daha ekle</button></div>`;
+  return h;
+}
+function coverHtml(rec, L0, ni) {
+  const m = rec.method;
+  if (ni < 0) {
+    const sub = m === "cuz" ? "Aynı düzen sürüyor; 20 günde bir hatim olur. Bugün bu hatmin " + (L0.post || 1) + ". günü."
+      : m === "osmanli" ? "Her gün sırayla bir cüz tekrar ediliyor; 30 günde bir hatim olur." : "Menzil tekrarı her gün devam ediyor.";
+    return `<div class="cover"><div class="eyebrow">Hafızlık tamamlandı</div><div class="big big-word">Hayırlı olsun</div><p class="cover-sub">${esc(sub)}</p></div>`;
+  }
+  const it = L0.items[ni];
+  const eyebrow = { osmanli: "Çiğ · yeni ezber", pakistan: "Sebak · yeni ders", cuz: "Bugünkü ezber" }[m] || "Bugünkü ezber";
+  const act = it.done
+    ? `<button class="btn btn-ghost" data-act="toggle" data-l="0" data-i="${ni}" aria-pressed="true"><span class="ck" aria-hidden="true"></span>Ezberlendi<span class="sep">·</span><span class="undo">Geri al</span></button>`
+    : `<button class="btn btn-gold" data-act="toggle" data-l="0" data-i="${ni}" aria-pressed="false">Ezberledim</button>`;
+  let next = "";
+  if (it.done && rec.lessons.length === 1) {
+    const np = planLesson(S.state, true).items.find(x => x.kind === "new");
+    next = `<p class="cover-next">${np ? "Sıradaki ders: " + esc(np.main) + " · " + esc(np.sub) : "Bu son sayfaydı."}</p>`;
+  }
+  return `<div class="cover"><div class="eyebrow">${esc(eyebrow)}</div><div class="big"><span class="unit">s.</span>${esc(it.rg.map(fmtRange).join(", "))}</div><p class="cover-sub">${esc(it.sub)}</p><div class="cover-act">${act}</div>${next}</div>`;
+}
+function sureTodayHtml(rec, live) {
+  const st = S.state, s = st.sure.cur;
+  const entries = (rec.entries || []).map(e => `<b>${esc(SURAHS[e.s - 1][0])}</b> ${e.from === e.to ? e.from : e.from + "–" + e.to}. ${e.from === e.to ? "ayet" : "ayetler"}`);
+  const entryLine = entries.length ? `<div class="entries"><span>Bugün: ${entries.join(" · ")}</span>${live ? `<button class="linkish" data-act="sure-undo">Son kaydı geri al</button>` : ""}</div>` : "";
+  let h;
+  if (!live) h = `<div class="cover"><div class="eyebrow">Bugünkü ezber</div>${entryLine || `<p class="cover-sub">Bugün ayet kaydı yok.</p>`}</div>`;
+  else if (sureAllDone(st)) h = `<div class="cover"><div class="eyebrow">Hafızlık tamamlandı</div><div class="big big-word">Hayırlı olsun</div><p class="cover-sub">114 surenin hepsi ezberlendi. Sıra tekrarı her gün devam ediyor.</p>${entryLine}</div>`;
+  else if (!s) {
+    const sug = sureSuggest(st);
+    h = `<div class="cover"><div class="eyebrow">Bugünkü ezber</div><div class="big big-word">Sure seç</div><p class="cover-sub">Ezberlemeye başlayacağın sureyi seç.</p><div class="cover-act"><button class="btn btn-gold" data-act="sure-set-cur" data-s="${sug}">${esc(SURAHS[sug - 1][0])} ile başla</button><button class="btn btn-ghost" data-act="open-sure-picker">Listeden seç</button></div>${entryLine}</div>`;
+  } else {
+    const d = SURAHS[s - 1], total = d[2], ay = st.sure.ay[s - 1], lo = Math.min(total, ay + 1);
+    let v = Number.isFinite(S.ui.ayInput) ? S.ui.ayInput : Math.min(total, ay + 5);
+    v = Math.max(lo, Math.min(total, v));
+    h = `<div class="cover">
+<div class="eyebrow">Bugünkü ezber</div>
+<div class="sure-head"><div class="big big-word">${esc(d[0])}</div><div class="ar" lang="ar" dir="rtl">${d[1]}</div></div>
+<p class="cover-sub">${s}. sure · ${total} ayet · ${d[3]}. cüz</p>
+<div class="meter" role="img" aria-label="${ay} / ${total} ayet"><span style="width:${(ay / total * 100).toFixed(2)}%"></span></div>
+<p class="meter-cap">${ay} / ${total} ayet ezberlendi</p>
+<label class="cover-label" for="sure-ay">Kaçıncı ayete kadar ezberledin?</label>
+<div class="stepper"><button class="step" data-act="sure-step" data-v="-1" aria-label="Bir ayet azalt">−</button><input id="sure-ay" class="step-in" type="number" inputmode="numeric" min="${lo}" max="${total}" value="${v}" data-in="sure-ay"><button class="step" data-act="sure-step" data-v="1" aria-label="Bir ayet artır">+</button><button class="btn btn-gold" data-act="sure-save">Kaydet</button></div>
+<div class="cover-links"><button class="linkish" data-act="sure-end">Sureyi bitirdim</button><button class="linkish" data-act="open-sure-picker">Sureyi değiştir</button></div>
+${entryLine}</div>`;
+  }
+  return h + reviewBlock(rec, emptyText("sure")) + totalsHtml(rec);
+}
+
+/* --- İlerleme --- */
+function stat(l, v, s) { return `<div class="stat"><span class="stat-l">${esc(l)}</span><span class="stat-v">${esc(v)}</span><span class="stat-s">${esc(s || " ")}</span></div>`; }
+function activity() {
+  const keys = Object.keys(S.days).filter(k => dayStatus(S.days[k])).sort();
+  let streak = 0, d = S.today;
+  if (!dayStatus(S.days[d])) d = addDays(d, -1);
+  while (dayStatus(S.days[d])) { streak++; d = addDays(d, -1); }
+  return { days: keys.length, streak };
+}
+function newAmount(rec) {
+  let s = 0;
+  (rec.lessons || []).forEach(L => L.items.forEach(it => { if (it.kind === "new" && it.done) s += it.applied && it.applied.added ? it.applied.added.length : it.n; }));
+  (rec.entries || []).forEach(e => { if (e.s >= 1 && e.s <= 114) s += SW[e.s - 1] * (e.to - e.from + 1) / sureTotal(e.s); });
+  return s;
+}
+function estimate(remaining) {
+  if (remaining <= 0.01) return { v: "Tamamlandı", s: "" };
+  const span = Math.max(1, Math.min(28, daysBetween(S.state.startedAt, S.today) + 1));
+  let sum = 0;
+  Object.keys(S.days).forEach(k => { const age = daysBetween(k, S.today); if (age >= 0 && age < span) sum += newAmount(S.days[k]); });
+  let pace = sum / span;
+  if (pace <= 0) { const m = S.state.method; pace = m === "osmanli" ? S.state.osm.per : m === "pakistan" ? S.state.pak.per : m === "cuz" ? 1 : 0; }
+  if (pace <= 0) return { v: "—", s: "ilk kayıttan sonra" };
+  const days = Math.ceil(remaining / pace);
+  if (days > 36500) return { v: "—", s: "kayıt arttıkça netleşir" };
+  return { v: DF_MY.format(parseKey(addDays(S.today, days))), s: "bu hızla ≈ " + NF.format(days) + " gün" };
+}
+function viewProgress() {
+  const st = S.state, act = activity(), sure = st.method === "sure";
+  let h;
+  if (sure) {
+    const w = sureWeightDone(st), sDone = st.sure.ay.filter((a, i) => a >= SURAHS[i][2]).length, ay = st.sure.ay.reduce((a, b) => a + b, 0), est = estimate(PAGES - w);
+    h = `<section class="hero"><div class="pct">${fmtPct(w / 6)}</div><p class="pct-sub">Kur'an'ın yaklaşık ezberlenen kısmı · <b>${sDone}</b> / 114 sure</p><div class="bar"><span style="width:${(w / 6).toFixed(2)}%"></span></div></section>
+<section class="stats">${stat("Ezberlenen ayet", NF.format(ay), "/ 6.236 ayet")}${stat("Çalışılan gün", NF.format(act.days), "başlangıç " + DF_DM.format(parseKey(st.startedAt)))}${stat("Seri", act.streak + " gün", act.streak ? "aralıksız" : "bugün kaydet")}${stat("Tahmini bitiş", est.v, est.s)}</section>
+<section class="block"><h2 class="label">Sure haritası</h2>${sureGridHtml()}<div class="legend"><span style="--sw:var(--leaf)">Ezberlenen</span><span style="--sw:var(--gold)">Şu anki sure</span><span style="--sw:var(--review)">Bugünkü tekrar</span><span style="--sw:var(--cell)">Henüz değil</span></div><p class="hint">Her kare bir sure; dolgu ezberlenen ayet oranını gösterir. Bir sureyi düzenlemek için üstüne dokun. Yüzde, surelerin mushaftaki uzunluğuna göre hesaplanır.</p></section>`;
+  } else {
+    const n = memCount(st.pages), cz = completedCuz(st.pages).length, est = estimate(PAGES - n);
+    h = `<section class="hero"><div class="pct">${fmtPct(n / 6)}</div><p class="pct-sub">Kur'an'ın ezberlenen kısmı · <b>${NF.format(n)}</b> / 600 sayfa</p><div class="bar"><span style="width:${(n / 6).toFixed(2)}%"></span></div></section>
+<section class="stats">${stat("Tamamlanan cüz", cz + " / 30", "")}${stat("Çalışılan gün", NF.format(act.days), "başlangıç " + DF_DM.format(parseKey(st.startedAt)))}${stat("Seri", act.streak + " gün", act.streak ? "aralıksız" : "bugün işaretle")}${stat("Tahmini bitiş", est.v, est.s)}</section>
+<section class="block"><h2 class="label">Sayfa haritası</h2>${mapHtml()}<div class="legend"><span style="--sw:var(--leaf)">Ezberlenen</span><span style="--sw:var(--gold)">Bugünkü ders</span><span style="--sw:var(--review)">Bugünkü tekrar</span><span style="--sw:var(--cell)">Henüz değil</span></div><p class="hint">Her sütun bir cüz, her kare bir sayfa (üstte 1, altta 20). Bir cüzü düzenlemek için sütununa dokun.</p></section>`;
+  }
+  return h + `<section class="block"><h2 class="label">Son 12 hafta</h2>${activityHtml()}</section><section class="block"><h2 class="label">Kayıtlar</h2>${historyHtml()}</section>`;
+}
+function mapHtml() {
+  const st = S.state, rec = todayRec().rec, nw = new Set(), rv = new Set();
+  if (rec.method !== "sure") rec.lessons.forEach(L => L.items.forEach(it => rangesPages(it.rg).forEach(p => (it.kind === "new" ? nw : rv).add(p))));
+  let cols = "", xs = "";
+  for (let c = 1; c <= 30; c++) {
+    let cells = "";
+    for (let p = cuzFirst(c); p <= cuzLast(c); p++) cells += `<i class="${nw.has(p) ? "n" : rv.has(p) ? "r" : isMem(st.pages, p) ? "m" : ""}"></i>`;
+    cols += `<button class="mcol" data-act="open-cuz" data-c="${c}" aria-label="${c}. cüz: ${cuzMem(st.pages, c)} / 20 sayfa ezberli">${cells}</button>`;
+    xs += `<span>${c === 1 || c % 5 === 0 ? c : ""}</span>`;
+  }
+  return `<div class="map-grid"><div class="map-y" aria-hidden="true"><span>1</span><span>20</span></div><div class="map">${cols}</div><span></span><div class="map-x" aria-hidden="true">${xs}</div></div>`;
+}
+function sureGridHtml() {
+  const st = S.state, rec = todayRec().rec, rv = new Set();
+  if (rec.method === "sure") rec.lessons.forEach(L => L.items.forEach(it => (it.sr || []).forEach(s => rv.add(s))));
+  let h = "";
+  for (let s = 1; s <= 114; s++) {
+    const tot = sureTotal(s), a = st.sure.ay[s - 1];
+    const cls = "stile" + (a >= tot ? " done" : "") + (s === st.sure.cur ? " n" : "") + (rv.has(s) ? " r" : "");
+    h += `<button class="${cls}" data-act="sure-open" data-s="${s}" style="--h:${(Math.min(1, a / tot) * 100).toFixed(1)}%" aria-label="${s}. ${esc(SURAHS[s - 1][0])}: ${a} / ${tot} ayet"><span></span><b>${s}</b></button>`;
+  }
+  return `<div class="sgrid">${h}</div>`;
+}
+function activityHtml() {
+  const W = 12, dow = (parseKey(S.today).getDay() + 6) % 7, start = addDays(S.today, -dow - (W - 1) * 7);
+  const months = [];
+  for (let w = 0; w < W; w++) months.push(parseKey(addDays(start, w * 7)).getMonth());
+  let head = "<span></span>";
+  for (let w = 0; w < W; w++) {
+    let show = w === 0 ? !months.slice(1, 3).some(m => m !== months[0]) : months[w] !== months[w - 1];
+    head += `<span class="am">${show ? esc(DF_MON.format(parseKey(addDays(start, w * 7)))) : ""}</span>`;
+  }
+  const dn = ["Pzt", "", "Çar", "", "Cum", "", "Paz"];
+  let body = "", count = 0;
+  for (let r = 0; r < 7; r++) {
+    body += `<span class="ad">${dn[r]}</span>`;
+    for (let w = 0; w < W; w++) {
+      const k = addDays(start, w * 7 + r), st = k > S.today ? "f" : dayStatus(S.days[k]);
+      if (st === "e" || st === "t") count++;
+      body += `<i class="ac ${st}${k === S.today ? " now" : ""}" title="${esc(DF_SHORT.format(parseKey(k)))}"></i>`;
+    }
+  }
+  return `<div class="act" role="img" aria-label="Son 12 haftada ${count} gün çalışıldı">${head}${body}</div><div class="legend"><span style="--sw:var(--leaf)">Ezber yapılan gün</span><span style="--sw:var(--review)">Yalnız tekrar</span></div>`;
+}
+function recSummary(rec) {
+  const pages = []; let rd = 0, rt = 0;
+  (rec.lessons || []).forEach(L => L.items.forEach(it => { if (it.kind === "new") { if (it.done) rangesPages(it.rg).forEach(p => pages.push(p)); } else { rt++; if (it.done) rd++; } }));
+  let a = pages.length ? fmtPages(toRanges(pages)) : "";
+  if (rec.entries && rec.entries.length) a = rec.entries.map(e => SURAHS[e.s - 1][0] + " " + (e.from === e.to ? e.from : e.from + "–" + e.to)).join(" · ");
+  return { a: a || "Yeni ezber yok", b: rt ? rd + "/" + rt + " tekrar" : "" };
+}
+function historyHtml() {
+  const keys = Object.keys(S.days).filter(k => dayStatus(S.days[k])).sort().reverse();
+  if (!keys.length) return `<p class="empty">Henüz kayıt yok. Bugünkü dersi işaretlediğinde burada görünecek.</p>`;
+  const lim = 14 + S.ui.histMore;
+  const rows = keys.slice(0, lim).map(k => { const r = recSummary(S.days[k]); return `<div class="hrow"><span class="hdate">${esc(DF_SHORT.format(parseKey(k)))}</span><span class="hnew">${esc(r.a)}</span><span class="hrev">${esc(r.b)}</span></div>`; }).join("");
+  return `<div class="hist">${rows}</div>${keys.length > lim ? `<div><button class="btn btn-line" data-act="hist-more">Daha fazla göster</button></div>` : ""}`;
+}
+
+/* --- Ayarlar --- */
+function seg(key, cur, opts, label) {
+  const id = "lb-" + key.replace(".", "-");
+  return `<div class="field"><span class="flabel" id="${id}">${esc(label)}</span><div class="seg" role="radiogroup" aria-labelledby="${id}">${opts.map(o => `<button role="radio" aria-checked="${String(cur) === String(o[0])}" data-act="set" data-k="${key}" data-v="${o[0]}">${esc(o[1])}</button>`).join("")}</div></div>`;
+}
+function confirmBox(text, act, label, danger) {
+  return `<div class="confirm"><p>${esc(text)}</p><div class="row"><button class="btn ${danger ? "btn-danger" : "btn-primary"}" data-act="${act}">${esc(label)}</button><button class="btn btn-line" data-act="confirm-cancel">Vazgeç</button></div></div>`;
+}
+function viewSettings() {
+  const st = S.state, m = METHODS[st.method];
+  let h = `<section class="set-sec"><h2 class="label">Usul</h2><div class="set-row"><div class="set-main"><div class="set-title">${esc(m.name)}</div><p class="set-desc">${esc(m.desc)}</p></div><button class="btn btn-line" data-act="open-method">Usulü değiştir</button></div></section>`;
+  let inner, title = m.name + " ayarları";
+  if (st.method === "osmanli") inner = seg("osm.per", st.osm.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük çiğ") + `<p class="set-desc">Her gün sıradaki cüzden bu kadar yeni sayfa ezberlenir.</p>`;
+  else if (st.method === "pakistan") inner = seg("pak.per", st.pak.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük sebak") + seg("pak.men", st.pak.men, [["auto", "Otomatik"], [5, "5"], [10, "10"], [20, "20"], [30, "30"], [60, "60 sayfa"]], "Günlük menzil") + `<p class="set-desc">Otomatik seçimde menzil, biten cüz sayısına göre artar: 1–3 cüz için 5 sayfa, 4–7 cüz için 10, 8–15 cüz için 20, 16–20 cüz için 30, daha fazlası için 60 sayfa.</p>`;
+  else if (st.method === "cuz") { title = "Cüz Usulü kuralları"; inner = `<ul class="rules"><li>Her gün sırayla bir yeni sayfa ezberlenir.</li><li>Cüzün kaçıncı sayfasındaysan o kadar cüz geri gidip o cüzü tekrar edersin; en son biten cüz önce gelir.</li><li>21. cüzden itibaren ana sıra her cüzde 20. cüzden 1. cüze iner.</li><li>22. cüzden itibaren biten 21–30. cüzler 10'ar sayfalık yan sıraya girer. Burada da tersten gidilir: son 10 sayfa önce, ondan önceki 10 sayfa sonra okunur.</li><li>Günlük tekrar en fazla 30 sayfadır. Hafızlık bitince aynı düzen sürer ve 20 günde bir hatim olur.</li></ul>`; }
+  else inner = seg("sure.dir", st.sure.dir, [["desc", "Sondan başa (Nâs → Fâtiha)"], ["asc", "Baştan sona (Fâtiha → Nâs)"]], "Önerilen sıra") + seg("sure.rev", st.sure.rev, [[0, "Kapalı"], [2, "≈2"], [5, "≈5"], [10, "≈10"], [20, "≈20 sayfa"]], "Günlük sıra tekrarı") + `<p class="set-desc">Ezberlediğin sureler sırayla tekrar edilir; her gün yaklaşık bu kadar sayfa okunur. Sayfa miktarı, surelerin mushaftaki uzunluğuna göre yapılan bir tahmindir.</p>`;
+  h += `<section class="set-sec"><h2 class="label">${esc(title)}</h2>${inner}</section>`;
+  h += positionHtml(st) + backupHtml() + storageHtml();
+  h += `<section class="set-sec"><h2 class="label">Sıfırla</h2>${S.ui.confirm === "reset" ? confirmBox("Bütün ilerlemen ve kayıtların silinecek. Bu işlem geri alınamaz.", "reset-apply", "Evet, hepsini sil", true) : `<div><button class="btn btn-line danger-line" data-act="reset-ask">Tüm ilerlemeyi sil</button></div>`}</section>`;
+  return h;
+}
+function guessOsm(st) {
+  const f = osmFind(st), per = Math.max(1, st.osm.per | 0);
+  if (!f) return { tur: 20, cuz: 1 };
+  return { tur: Math.max(1, Math.min(20, Math.ceil((21 - kOf(f.nw[f.nw.length - 1])) / per))), cuz: f.c };
+}
+function posValues() {
+  const st = S.state, P = S.ui.pos;
+  if (st.method === "osmanli") { const g = guessOsm(st); return { tur: clampInt(P.tur != null ? P.tur : g.tur, 1, 20), cuz: clampInt(P.cuz != null ? P.cuz : g.cuz, 1, 30) }; }
+  const f = firstUnmem(st.pages);
+  return { page: clampInt(P.page != null ? P.page : (f ? f - 1 : PAGES), 0, PAGES) };
+}
+function posExplain() {
+  const st = S.state, v = posValues();
+  if (st.method === "osmanli") {
+    const per = Math.max(1, st.osm.per | 0), r = v.tur, c = v.cuz, A = Math.min(20, r * per), B = Math.min(20, (r - 1) * per);
+    const seg2 = B > 0 ? (c === 30 ? "30. cüzün" : c + "–30. cüzlerin") + " son " + B + " sayfası" : "";
+    let t;
+    if (c === 1) t = B > 0 ? "Bütün cüzlerin son " + B + " sayfası ezberli sayılacak." : "Hiçbir sayfa ezberli sayılmayacak.";
+    else t = (c - 1 === 1 ? "1. cüzün" : "1–" + (c - 1) + ". cüzlerin") + " son " + A + " sayfası" + (seg2 ? ", " + seg2 : "") + " ezberli sayılacak.";
+    return t + (B < 20 ? " Sıradaki ders: " + c + ". cüz, " + (20 - B) + ". sayfa." : "");
+  }
+  const p = v.page;
+  if (p === 0) return "Hiçbir sayfa ezberli sayılmayacak. Sıradaki ders: s. 1 (1. cüz, 1. sayfa).";
+  if (p === PAGES) return "600 sayfanın hepsi ezberli sayılacak.";
+  return "1–" + p + ". sayfalar ezberli sayılacak, gerisi işaretsiz olacak. Sıradaki ders: s. " + (p + 1) + " (" + cuzOf(p + 1) + ". cüz, " + kOf(p + 1) + ". sayfa).";
+}
+function positionHtml(st) {
+  const head = `<h2 class="label">Kaldığın yer</h2>`;
+  if (st.method === "sure") return `<section class="set-sec">${head}<p class="set-desc">Daha önce ezberlediğin sureleri listeden işaretle. Her surede kaç ayet ezberlediğini girebilirsin.</p><div><button class="btn btn-line" data-act="open-sure-picker">Sure listesini aç</button></div></section>`;
+  const v = posValues();
+  const inputs = st.method === "osmanli"
+    ? `<div class="row"><div class="field"><label for="pos-tur">Kaçıncı turdasın?</label><input id="pos-tur" class="inp" type="number" inputmode="numeric" min="1" max="20" value="${v.tur}" data-in="pos-tur"></div><div class="field"><label for="pos-cuz">Bu turda sıradaki cüz</label><input id="pos-cuz" class="inp" type="number" inputmode="numeric" min="1" max="30" value="${v.cuz}" data-in="pos-cuz"></div></div>`
+    : `<div class="field"><label for="pos-page">Son ezberlediğin sayfa</label><input id="pos-page" class="inp" type="number" inputmode="numeric" min="0" max="600" value="${v.page}" data-in="pos-page"></div>`;
+  const btn = S.ui.confirm === "pos" ? confirmBox("Ezberli sayfalar bu bilgiye göre baştan işaretlenecek, bugünkü işaretlerin de sıfırlanacak. Devam edilsin mi?", "pos-apply", "Evet, uygula") : `<div><button class="btn btn-line" data-act="pos-ask">Uygula</button></div>`;
+  return `<section class="set-sec">${head}<p class="set-desc">Daha önce ezber yaptıysan buradan gir. Tek tek düzeltmek için İlerleme'deki haritada bir cüze dokun.</p>${inputs}<p class="set-desc" id="pos-exp">${esc(posExplain())}</p>${btn}</section>`;
+}
+function applyPos() {
+  const st = S.state, v = posValues();
+  if (st.method === "osmanli") {
+    const per = Math.max(1, st.osm.per | 0), a = new Array(PAGES).fill("0");
+    for (let c = 1; c <= 30; c++) { const cnt = Math.min(20, (c < v.cuz ? v.tur : v.tur - 1) * per); for (let k = 21 - cnt; k <= 20; k++) a[cuzFirst(c) + k - 2] = "1"; }
+    st.pages = a.join(""); st.osm.ptr = v.cuz;
+  } else { st.pages = "1".repeat(v.page) + "0".repeat(PAGES - v.page); st.pak.m = 0; st.cuz.post = 0; }
+  S.ui.pos = {}; S.ui.confirm = null;
+  if (S.days[S.today]) { delete S.days[S.today]; saveDay(S.today); }
+  saveState(); render(); toast("Kaldığın yer güncellendi.");
+}
+function backupHtml() {
+  let h = `<section class="set-sec"><h2 class="label">Yedek</h2><p class="set-desc">Kayıtlarını metin olarak kopyalayıp saklayabilir, başka bir cihazda geri yükleyebilirsin.</p><div class="row"><button class="btn btn-line" data-act="backup-copy">Yedeği kopyala</button><button class="btn btn-line" data-act="restore-open">Yedekten geri yükle</button></div>`;
+  if (S.ui.backupText) h += `<div class="field"><label for="backup-out">Panoya kopyalanamadı. Metni seçip kendin kopyala:</label><textarea id="backup-out" class="ta" rows="4" readonly>${esc(S.ui.backupText)}</textarea></div>`;
+  if (S.ui.restoreOpen) {
+    h += `<div class="field"><label for="restore-in">Yedek metnini buraya yapıştır</label><textarea id="restore-in" class="ta" rows="4" data-in="restore-text">${esc(S.ui.restoreText)}</textarea>${S.ui.restoreErr ? `<p class="err">${esc(S.ui.restoreErr)}</p>` : ""}</div>`;
+    h += S.ui.confirm === "restore" ? confirmBox("Şu anki kayıtların yedektekilerle değiştirilecek. Devam edilsin mi?", "restore-apply", "Evet, geri yükle") : `<div class="row"><button class="btn btn-primary" data-act="restore-ask">Geri yükle</button><button class="btn btn-line" data-act="restore-close">Vazgeç</button></div>`;
+  }
+  return h + `</section>`;
+}
+function storageHtml() {
+  const t = Store.kind === "db" ? "İlerlemen Claude hesabına kaydediliyor; giriş yaptığın her cihazda aynı kayıtları görürsün. Bu sayfayı paylaştığın kişiler senin kayıtlarını göremez, herkesin ilerlemesi ayrı tutulur."
+    : Store.kind === "local" && APP ? "İlerlemen bu telefonda, uygulamanın içinde saklanıyor. Uygulamayı silmeden ya da telefon değiştirmeden önce yedeği kopyala; yeni telefonda Yedekten geri yükle ile aktarırsın."
+    : Store.kind === "local" ? "İlerlemen yalnızca bu tarayıcıda saklanıyor. Başka bir cihaza geçmek için yedeği kopyalayıp orada geri yükleyebilirsin."
+    : "Bu tarayıcı kayıt tutmaya izin vermiyor. Sayfayı kapatmadan önce yedeğini kopyala.";
+  return `<section class="set-sec"><h2 class="label">Kayıt yeri</h2><p class="set-desc">${esc(t)}</p></section>`;
+}
+function backupJson() { return JSON.stringify({ app: "hafizlik", v: 1, savedAt: new Date().toISOString(), state: S.state, days: S.days }); }
+function restoreBackup(txt) {
+  let o;
+  try { o = JSON.parse(txt); } catch (e) { return "Metin okunamadı. Yedeği eksiksiz yapıştırdığından emin ol."; }
+  if (!o || o.app !== "hafizlik" || !o.state) return "Bu metin bir Hafızlık yedeği değil.";
+  const st = normalizeState(o.state, S.today);
+  if (!st) return "Yedekteki usul bilgisi okunamadı.";
+  const months = new Set(Object.keys(S.days).map(k => k.slice(0, 7)));
+  S.state = st; S.days = sanitizeDays(o.days);
+  Object.keys(S.days).forEach(k => months.add(k.slice(0, 7)));
+  saveState(); months.forEach(m => saveDay(m + "-01"));
+  return "";
+}
+function resetAll() {
+  const months = new Set(Object.keys(S.days).map(k => k.slice(0, 7)));
+  S.state = null; S.days = {};
+  saveState(); months.forEach(m => saveDay(m + "-01"));
+  S.ui = { tab: "bugun", onbSel: "osmanli", sheet: null, ayInput: null, detailAy: null, histMore: 0, confirm: null, pos: {}, backupText: "", restoreOpen: false, restoreText: "", restoreErr: "" };
+  $("#app").innerHTML = ""; render(); toast("Bütün ilerleme silindi.");
+}
+
+/* --- Onboarding ve usul seçimi --- */
+function demoFigure(sel) {
+  return `<figure class="demo"><canvas id="demo" aria-hidden="true"></canvas><figcaption><span class="demo-top"><b id="demo-day">1. gün</b> · örnek gidişat</span><span id="demo-cap">${esc(METHODS[sel].cap)}</span><span class="legend"><span style="--sw:var(--leaf)">Ezberlenen</span><span style="--sw:var(--gold)">O günün dersi</span><span style="--sw:var(--review)">O günün tekrarı</span></span></figcaption></figure>`;
+}
+function methodOptions(sel, act, labelId) {
+  return `<div class="methods" role="radiogroup" aria-labelledby="${labelId}">${METHOD_KEYS.map(k => `<button class="mopt" role="radio" aria-checked="${k === sel}" data-act="${act}" data-v="${k}"><span class="dot" aria-hidden="true"></span><span><b>${esc(METHODS[k].name)}</b><small>${esc(METHODS[k].desc)}</small></span></button>`).join("")}</div>`;
+}
+function onboardingHtml() {
+  const sel = S.ui.onbSel;
+  return `<div class="onb wrap">
+<div class="onb-a"><h1 class="onb-title">Hafızlık</h1><p class="onb-lede">Ezberini gün gün takip et, ilerlemeni gör.</p><p class="facts">600 sayfa · 30 cüz · 114 sure</p>${demoFigure(sel)}</div>
+<div class="onb-b"><h2 class="q" id="q-usul">Hangi usulle ezber yapacaksın?</h2>${methodOptions(sel, "pick-method", "q-usul")}<button class="btn btn-primary btn-wide" id="start-btn" data-act="start">${esc(METHODS[sel].name)} ile başla</button><p class="note">Usulü daha sonra Ayarlar'dan değiştirebilirsin. Daha önce ezber yaptıysan kaldığın yeri de oradan girersin.</p></div>
+</div>`;
+}
+function selectOption(root, k) {
+  root.querySelectorAll(".mopt").forEach(b => b.setAttribute("aria-checked", String(b.dataset.v === k)));
+  const cap = root.querySelector("#demo-cap"); if (cap) cap.textContent = METHODS[k].cap;
+  demoStart(k);
+}
+function methodNote(cur, sel) {
+  if (sel === cur) return "Şu an bu usulü kullanıyorsun.";
+  const t = (cur === "sure") !== (sel === "sure")
+    ? "Sure Sure usulünde ilerleme sure ve ayet olarak ayrı tutulur. Sayfa ilerlemen silinmez; geri döndüğünde kaldığın yerden devam edersin."
+    : "Ezberlediğin sayfalar korunur. Sıradaki ders yeni usulün kurallarına göre hesaplanır.";
+  return t + (dayStatus(S.days[S.today]) ? " Bugünkü kayıtların olduğu gibi kalır; yeni usul yarından itibaren geçerli olur." : "");
+}
+function changeMethod(m) {
+  const st = S.state;
+  if (!METHODS[m] || st.method === m) return;
+  st.method = m;
+  if (m === "sure" && !st.sure.cur) st.sure.cur = sureSuggest(st);
+  S.ui.ayInput = null; S.ui.pos = {}; S.ui.confirm = null;
+  dropIdleToday(); saveState(); closeSheet(); toast(METHODS[m].name + " seçildi.");
+}
+
+/* --- sayfalar (sheet) --- */
+function openSheet(sh) { S.ui.sheet = sh; S.ui.ret = document.activeElement; document.body.classList.add("has-sheet"); renderSheet(true); }
+function closeSheet() {
+  S.ui.sheet = null; S.ui.detailAy = null; demoStop();
+  document.body.classList.remove("has-sheet"); $("#sheet-root").innerHTML = ""; render();
+  const r = S.ui.ret; S.ui.ret = null;
+  if (r && r.isConnected) try { r.focus(); } catch (e) {}
+}
+function renderSheet(focus) {
+  const root = $("#sheet-root"), sh = S.ui.sheet;
+  if (!sh) { root.innerHTML = ""; return; }
+  const body = sh.type === "cuz" ? sheetCuzHtml(sh.c) : sh.type === "sure" ? sheetSureHtml(sh) : sheetMethodHtml(sh);
+  root.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title" tabindex="-1">${body}</div></div>`;
+  if (sh.type === "method") demoStart(sh.sel || S.state.method);
+  if (focus) root.querySelector(".sheet").focus();
+}
+function sheetCuzHtml(c) {
+  const pg = S.state.pages;
+  let btns = "";
+  for (let k = 1; k <= 20; k++) { const p = cuzFirst(c) + k - 1, on = isMem(pg, p); btns += `<button class="pg${on ? " on" : ""}" data-act="cuz-page" data-p="${p}" aria-pressed="${on}" aria-label="${k}. sayfa, s. ${p}"><b>${k}</b><small>s. ${p}</small></button>`; }
+  return `<div class="sh-head"><button class="sh-nav" data-act="cuz-nav" data-c="${c - 1}"${c === 1 ? " disabled" : ""} aria-label="Önceki cüz">‹</button><div><h2 id="sh-title">${c}. cüz</h2><p class="sh-sub">s. ${cuzFirst(c)}–${cuzLast(c)} · ${cuzMem(pg, c)} / 20 sayfa ezberli</p></div><button class="sh-nav" data-act="cuz-nav" data-c="${c + 1}"${c === 30 ? " disabled" : ""} aria-label="Sonraki cüz">›</button></div>
+<p class="hint">Ezberlediğin sayfalara dokunarak işaretle ya da işareti kaldır.</p>
+<div class="pgrid">${btns}</div>
+<div class="sh-actions"><button class="btn btn-line" data-act="cuz-all" data-c="${c}" data-on="1">Tümünü işaretle</button><button class="btn btn-line" data-act="cuz-all" data-c="${c}" data-on="0">Tümünü kaldır</button><button class="btn btn-primary" data-act="close-sheet">Tamam</button></div>`;
+}
+const trFold = s => s.toLocaleLowerCase("tr-TR").replace(/[âà]/g, "a").replace(/[îı]/g, "i").replace(/û/g, "u").replace(/ş/g, "s").replace(/ğ/g, "g").replace(/ç/g, "c").replace(/ö/g, "o").replace(/ü/g, "u").replace(/['’\-\s]/g, "");
+function sureListHtml(q) {
+  const st = S.state, f = trFold(q || "").trim();
+  let h = "";
+  for (let s = 1; s <= 114; s++) {
+    const d = SURAHS[s - 1];
+    if (f && !(String(s) === f || trFold(d[0]).indexOf(f) >= 0)) continue;
+    const a = st.sure.ay[s - 1], tot = d[2];
+    const ss = s === st.sure.cur ? ["cur", a ? a + "/" + tot : "şu an"] : a >= tot ? ["done", "✓"] : a > 0 ? ["part", a + "/" + tot] : ["", ""];
+    h += `<button class="srow" data-act="sure-open" data-s="${s}"><span class="sn">${s}</span><span class="st"><b>${esc(d[0])}</b><small>${tot} ayet · ${d[3]}. cüz</small></span><span class="sa" lang="ar" dir="rtl">${d[1]}</span><span class="ss ${ss[0]}"${ss[0] === "done" ? ' aria-label="ezberlendi"' : ""}>${ss[1]}</span></button>`;
+  }
+  return h || `<p class="empty">Bu adla bir sure bulunamadı.</p>`;
+}
+function sheetSureHtml(sh) {
+  const st = S.state;
+  if (sh.detail) {
+    const s = sh.detail, d = SURAHS[s - 1], tot = d[2], a = st.sure.ay[s - 1];
+    const v = Number.isFinite(S.ui.detailAy) ? Math.max(0, Math.min(tot, S.ui.detailAy)) : a;
+    const curBtn = st.sure.cur === s ? `<span class="chip">Şu an bunu ezberliyorsun</span>` : a >= tot ? "" : `<button class="btn btn-line" data-act="sure-set-cur" data-s="${s}">Bu sureyi ezberlemeye başla</button>`;
+    return `<div class="sh-head"><button class="sh-nav" data-act="sure-back" aria-label="Sure listesine dön">‹</button><div><h2 id="sh-title">${esc(d[0])}</h2><p class="sh-sub">${s}. sure · ${tot} ayet · ${d[3]}. cüz</p></div><span class="ar-lg" lang="ar" dir="rtl">${d[1]}</span></div>
+<div class="field"><label for="sure-detail-ay">Ezberlenen ayet sayısı (baştan)</label><div class="stepper paper"><button class="step" data-act="detail-step" data-v="-1" aria-label="Bir azalt">−</button><input id="sure-detail-ay" class="step-in" type="number" inputmode="numeric" min="0" max="${tot}" value="${v}" data-in="sure-detail-ay"><button class="step" data-act="detail-step" data-v="1" aria-label="Bir artır">+</button><button class="btn btn-line" data-act="detail-set" data-v="0">Hiç</button><button class="btn btn-line" data-act="detail-set" data-v="${tot}">Tamamı</button></div></div>
+<div class="sh-actions"><button class="btn btn-primary" data-act="sure-detail-save" data-s="${s}">Kaydet</button>${curBtn}</div>`;
+  }
+  const n = st.sure.ay.filter((a, i) => a >= SURAHS[i][2]).length;
+  return `<div class="sh-head"><div><h2 id="sh-title">Sureler</h2><p class="sh-sub">${n} / 114 sure ezberli</p></div><button class="sh-x" data-act="close-sheet" aria-label="Kapat">×</button></div>
+<input id="sure-search" class="search" type="search" placeholder="Sure adı veya numarası" autocomplete="off" data-in="sure-search" value="${esc(sh.q || "")}" aria-label="Sure ara">
+<div class="slist" id="slist">${sureListHtml(sh.q)}</div>`;
+}
+function sheetMethodHtml(sh) {
+  const cur = S.state.method, sel = sh.sel || cur;
+  return `<div class="sh-head"><div><h2 id="sh-title">Usulü değiştir</h2><p class="sh-sub">Şu an: ${esc(METHODS[cur].name)}</p></div><button class="sh-x" data-act="close-sheet" aria-label="Kapat">×</button></div>
+${demoFigure(sel)}${methodOptions(sel, "sheet-pick", "sh-title")}
+<p class="note" id="method-note">${esc(methodNote(cur, sel))}</p>
+<div class="sh-actions"><button class="btn btn-primary" id="method-apply" data-act="method-apply"${sel === cur ? " disabled" : ""}>${esc(sel === cur ? "Bu usuldesin" : METHODS[sel].to)}</button><button class="btn btn-line" data-act="close-sheet">Vazgeç</button></div>`;
+}
+
+/* --- örnek gidişat çizimi --- */
+const Demo = { raf: 0, gen: null, method: "", canvas: null, frame: null, acc: 0, lastT: 0, hold: 0, colors: null };
+function demoColors() { const cs = getComputedStyle(document.documentElement), g = n => cs.getPropertyValue(n).trim(); return { cell: g("--cell"), mem: g("--leaf"), nw: g("--gold"), rev: g("--review") }; }
+function demoStop() { cancelAnimationFrame(Demo.raf); Demo.raf = 0; Demo.canvas = null; }
+function demoStart(method) {
+  demoStop();
+  const cv = document.getElementById("demo");
+  if (!cv) return;
+  Demo.canvas = cv; Demo.method = method; Demo.colors = demoColors();
+  Demo.gen = simulate(method); Demo.frame = Demo.gen.next().value; Demo.acc = 0; Demo.lastT = 0; Demo.hold = 0;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const target = method === "sure" ? 40 : 245;
+    for (let i = 1; i < target; i++) { const r = Demo.gen.next(); if (r.done) break; Demo.frame = r.value; }
+    demoDraw(); return;
+  }
+  demoDraw(); Demo.raf = requestAnimationFrame(demoTick);
+}
+function demoTick(t) {
+  if (!Demo.canvas || !Demo.canvas.isConnected) { demoStop(); return; }
+  if (!Demo.lastT) Demo.lastT = t;
+  const dt = Math.min(120, t - Demo.lastT); Demo.lastT = t;
+  if (Demo.hold > 0) {
+    Demo.hold -= dt;
+    if (Demo.hold <= 0) { Demo.gen = simulate(Demo.method); Demo.frame = Demo.gen.next().value; Demo.acc = 0; demoDraw(); }
+  } else {
+    Demo.acc += dt * (Demo.method === "sure" ? 7 : 30) / 1000;
+    let moved = false;
+    while (Demo.acc >= 1) {
+      Demo.acc -= 1;
+      const r = Demo.gen.next();
+      if (r.done) { Demo.hold = 2600; break; }
+      Demo.frame = r.value; moved = true;
+      if (r.value.done) { Demo.hold = 2600; break; }
+    }
+    if (moved) demoDraw();
+  }
+  Demo.raf = requestAnimationFrame(demoTick);
+}
+function demoDraw() {
+  const cv = Demo.canvas, f = Demo.frame;
+  if (!cv || !f) return;
+  const sure = Demo.method === "sure", cols = sure ? 19 : 30, rows = sure ? 6 : 20;
+  const W = cv.clientWidth || (cv.parentElement && cv.parentElement.clientWidth) || 320, gap = W < 420 ? 1.5 : 2;
+  const cell = (W - gap * (cols - 1)) / cols, H = Math.round(rows * cell + gap * (rows - 1)), dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.height = H + "px"; }
+  const ctx = cv.getContext("2d"), C = Demo.colors, st = f.st, nw = new Set(), rv = new Set(), rad = Math.min(2, cell * 0.2);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (!f.done) {
+    f.plan.items.forEach(it => { if (sure) (it.sr || []).forEach(s => rv.add(s)); else rangesPages(it.rg).forEach(p => (it.kind === "new" ? nw : rv).add(p)); });
+    if (sure && st.sure.cur) nw.add(st.sure.cur);
+  }
+  const box = (x, y, col) => { ctx.fillStyle = col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, cell, cell, rad); else ctx.rect(x, y, cell, cell); ctx.fill(); };
+  if (sure) for (let s = 1; s <= 114; s++) { const i = s - 1; box((i % cols) * (cell + gap), Math.floor(i / cols) * (cell + gap), nw.has(s) ? C.nw : rv.has(s) ? C.rev : sureDone(st, s) ? C.mem : C.cell); }
+  else for (let p = 1; p <= PAGES; p++) box((cuzOf(p) - 1) * (cell + gap), (kOf(p) - 1) * (cell + gap), nw.has(p) ? C.nw : rv.has(p) ? C.rev : isMem(st.pages, p) ? C.mem : C.cell);
+  const day = document.getElementById("demo-day");
+  if (day) day.textContent = f.done ? "Hafızlık tamam" : NF.format(f.step) + (sure ? ". sure" : ". gün");
+}
+function refreshDemoColors() { if (Demo.canvas) { Demo.colors = demoColors(); demoDraw(); } }
+
+/* ---------------- olaylar ---------------- */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el || el.disabled) return;
+  const d = el.dataset, st = S.state;
+  switch (d.act) {
+    case "scrim": if (e.target === el) closeSheet(); return;
+    case "close-sheet": closeSheet(); return;
+    case "go-local": dbFailed({ code: "lost" }); return;
+    case "tab": S.ui.tab = d.v; S.ui.confirm = null; render(); window.scrollTo(0, 0); return;
+    case "pick-method": S.ui.onbSel = d.v; selectOption($("#app"), d.v); $("#start-btn").textContent = METHODS[d.v].name + " ile başla"; return;
+    case "start": {
+      const m = S.ui.onbSel, ns = defaultState(m, S.today);
+      if (m === "sure") ns.sure.cur = sureSuggest(ns);
+      S.state = ns; S.ui.tab = "bugun"; demoStop(); saveState(); render(); toast(METHODS[m].name + " ile başladın. Allah kolaylık versin."); return;
+    }
+    case "toggle": toggleItem(+d.l, +d.i); return;
+    case "add-lesson": addLesson(); return;
+    case "remove-lesson": removeLesson(+d.l); return;
+    case "sure-step": { const inp = $("#sure-ay"); if (!inp) return; const v = clampInt((parseInt(inp.value, 10) || 0) + Number(d.v), +inp.min, +inp.max); inp.value = v; S.ui.ayInput = v; return; }
+    case "sure-save": { const inp = $("#sure-ay"); if (inp) saveSureEntry(parseInt(inp.value, 10)); return; }
+    case "sure-end": if (st.sure.cur) saveSureEntry(sureTotal(st.sure.cur)); return;
+    case "sure-undo": undoSureEntry(); return;
+    case "open-sure-picker": openSheet({ type: "sure", q: "", detail: 0 }); return;
+    case "sure-open": S.ui.detailAy = null; if (S.ui.sheet && S.ui.sheet.type === "sure") { S.ui.sheet.detail = +d.s; renderSheet(true); } else openSheet({ type: "sure", q: "", detail: +d.s }); return;
+    case "sure-back": S.ui.sheet.detail = 0; S.ui.detailAy = null; renderSheet(true); return;
+    case "detail-step": { const inp = $("#sure-detail-ay"); if (!inp) return; const v = clampInt((parseInt(inp.value, 10) || 0) + Number(d.v), 0, +inp.max); inp.value = v; S.ui.detailAy = v; return; }
+    case "detail-set": { const inp = $("#sure-detail-ay"); if (!inp) return; inp.value = d.v; S.ui.detailAy = +d.v; return; }
+    case "sure-detail-save": {
+      const s = +d.s, tot = sureTotal(s), inp = $("#sure-detail-ay"), v = clampInt(inp ? inp.value : st.sure.ay[s - 1], 0, tot);
+      st.sure.ay[s - 1] = v;
+      if (v >= tot && st.sure.cur === s) { st.sure.last = s; st.sure.cur = sureSuggest(st); }
+      if (!st.sure.cur) st.sure.cur = sureSuggest(st);
+      S.ui.detailAy = null; S.ui.ayInput = null; S.ui.sheet.detail = 0;
+      dropIdleToday(); saveState(); renderSheet(true); render(); toast(SURAHS[s - 1][0] + " kaydedildi."); return;
+    }
+    case "sure-set-cur": {
+      const s = +d.s;
+      if (sureDone(st, s)) { toast("Bu sure zaten ezberli."); return; }
+      st.sure.cur = s; S.ui.ayInput = null; S.ui.tab = "bugun";
+      dropIdleToday(); saveState();
+      if (S.ui.sheet) closeSheet(); else render();
+      toast(SURAHS[s - 1][0] + " suresi seçildi."); return;
+    }
+    case "open-cuz": openSheet({ type: "cuz", c: +d.c }); return;
+    case "cuz-nav": S.ui.sheet.c = Math.max(1, Math.min(30, +d.c)); renderSheet(true); return;
+    case "cuz-page": {
+      const p = +d.p; st.pages = setPages(st.pages, [p], !isMem(st.pages, p));
+      saveState(); render(); renderSheet(); const b = document.querySelector('[data-p="' + p + '"]'); if (b) b.focus(); return;
+    }
+    case "cuz-all": { const c = +d.c; st.pages = setPages(st.pages, seq(cuzFirst(c), cuzLast(c)), d.on === "1"); saveState(); render(); renderSheet(true); return; }
+    case "open-method": openSheet({ type: "method", sel: st.method }); return;
+    case "sheet-pick": {
+      S.ui.sheet.sel = d.v; const root = $("#sheet-root"); selectOption(root, d.v);
+      const btn = root.querySelector("#method-apply"); btn.disabled = d.v === st.method; btn.textContent = d.v === st.method ? "Bu usuldesin" : METHODS[d.v].to;
+      root.querySelector("#method-note").textContent = methodNote(st.method, d.v); return;
+    }
+    case "method-apply": changeMethod(S.ui.sheet.sel); return;
+    case "set": {
+      const parts = d.k.split("."), v = /^\d+$/.test(d.v) ? Number(d.v) : d.v;
+      st[parts[0]][parts[1]] = v;
+      if (d.k === "sure.dir" && st.sure.cur && st.sure.ay[st.sure.cur - 1] === 0) st.sure.cur = sureSuggest(st);
+      dropIdleToday(); saveState(); render(); return;
+    }
+    case "pos-ask": S.ui.confirm = "pos"; render(); return;
+    case "pos-apply": applyPos(); return;
+    case "confirm-cancel": S.ui.confirm = null; render(); return;
+    case "reset-ask": S.ui.confirm = "reset"; render(); return;
+    case "reset-apply": resetAll(); return;
+    case "backup-copy": {
+      const txt = backupJson();
+      if (APP && window.HafizlikAndroid && window.HafizlikAndroid.kopyala) {
+        try { if (window.HafizlikAndroid.kopyala(txt)) { S.ui.backupText = ""; render(); toast("Yedek panoya kopyalandı. Güvenli bir yere yapıştırıp sakla."); return; } } catch (err) {}
+      }
+      try {
+        navigator.clipboard.writeText(txt).then(() => { S.ui.backupText = ""; render(); toast("Yedek panoya kopyalandı."); }, () => { S.ui.backupText = txt; render(); const t = $("#backup-out"); if (t) t.select(); });
+      } catch (err) { S.ui.backupText = txt; render(); const t = $("#backup-out"); if (t) t.select(); }
+      return;
+    }
+    case "restore-open": S.ui.restoreOpen = true; S.ui.restoreErr = ""; render(); const ta = $("#restore-in"); if (ta) ta.focus(); return;
+    case "restore-close": S.ui.restoreOpen = false; S.ui.restoreText = ""; S.ui.restoreErr = ""; S.ui.confirm = null; render(); return;
+    case "restore-ask": if (!S.ui.restoreText.trim()) { S.ui.restoreErr = "Önce yedek metnini yapıştır."; render(); return; } S.ui.confirm = "restore"; S.ui.restoreErr = ""; render(); return;
+    case "restore-apply": {
+      const err = restoreBackup(S.ui.restoreText);
+      S.ui.confirm = null;
+      if (err) { S.ui.restoreErr = err; render(); return; }
+      S.ui.restoreOpen = false; S.ui.restoreText = ""; S.ui.restoreErr = ""; render(); toast("Yedek geri yüklendi."); return;
+    }
+    case "hist-more": S.ui.histMore += 30; render(); return;
+  }
+});
+document.addEventListener("input", e => {
+  const el = e.target.closest("[data-in]");
+  if (!el) return;
+  switch (el.dataset.in) {
+    case "sure-ay": S.ui.ayInput = parseInt(el.value, 10); break;
+    case "sure-detail-ay": S.ui.detailAy = parseInt(el.value, 10); break;
+    case "sure-search": S.ui.sheet.q = el.value; $("#slist").innerHTML = sureListHtml(el.value); break;
+    case "pos-tur": S.ui.pos.tur = el.value; $("#pos-exp").textContent = posExplain(); break;
+    case "pos-cuz": S.ui.pos.cuz = el.value; $("#pos-exp").textContent = posExplain(); break;
+    case "pos-page": S.ui.pos.page = el.value; $("#pos-exp").textContent = posExplain(); break;
+    case "restore-text": S.ui.restoreText = el.value; break;
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && S.ui.sheet) { closeSheet(); return; }
+  if (e.key === "Enter" && e.target && e.target.id === "sure-ay") { e.preventDefault(); saveSureEntry(parseInt(e.target.value, 10)); }
+});
+window.addEventListener("resize", () => { if (Demo.canvas) demoDraw(); });
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", refreshDemoColors); } catch (e) {}
+try { new MutationObserver(refreshDemoColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] }); } catch (e) {}
+function checkDay() { const t = dkey(new Date()); if (t !== S.today) { S.today = t; S.ui.ayInput = null; if (S.mode === "ready" && S.state) render(); } }
+setInterval(checkDay, 60000);
+document.addEventListener("visibilitychange", () => { if (document.hidden) flushLocal(); else checkDay(); });
+window.addEventListener("pagehide", flushLocal);
+// Android uygulaması için: arka plana geçerken kaydet, geri dönünce günü kontrol et, geri tuşunu yönet.
+window.hafizlikFlush = flushLocal;
+window.hafizlikResume = checkDay;
+window.hafizlikBack = function () {
+  if (S.ui.sheet) { closeSheet(); return true; }
+  if (S.ui.confirm) { S.ui.confirm = null; render(); return true; }
+  if (S.state && S.ui.tab !== "bugun") { S.ui.tab = "bugun"; render(); window.scrollTo(0, 0); return true; }
+  return false;
+};
+
+/* ---------------- açılış ---------------- */
+async function boot() {
+  try { document.documentElement.lang = "tr"; } catch (e) {}
+  render();
+  let db = null, user = null, uid = null;
+  try { if (window.claude && typeof window.claude.use === "function") { const r = await Promise.all([window.claude.use("db"), window.claude.use("user")]); db = r[0]; user = r[1]; } } catch (e) {}
+  if (db && user) { try { uid = await user.id(); } catch (e) {} }
+  if (db && uid) startDb(db, uid); else startLocal("local");
+}
+boot();
+})();
+</script>
+</body>
+</html>

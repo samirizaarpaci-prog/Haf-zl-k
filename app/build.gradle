@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Sürüm numarası GitHub'daki derleme sırasından gelir (-PsurumKodu=…). Her yeni sürüm bir öncekinden büyük olur,
+// böylece telefondaki uygulama silinmeden güncellenir.
+def surumKodu = (project.findProperty('surumKodu') ?: '1').toString().toInteger()
+
+android {
+    namespace = 'com.sraatolye.hafizlik'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = 'com.sraatolye.hafizlik'
+        minSdk = 26
+        targetSdk = 36
+        versionCode = surumKodu
+        versionName = "1.0.${surumKodu}"
+    }
+
+    // Deneme APK'ları hep aynı anahtarla imzalanır: yeni sürüm eskisinin üstüne kurulur, ilerleme silinmez.
+    signingConfigs {
+        deneme {
+            storeFile = rootProject.file('keys/deneme-anahtari.p12')
+            storePassword = 'hafizlik-deneme'
+            keyAlias = 'hafizlik'
+            keyPassword = 'hafizlik-deneme'
+            storeType = 'pkcs12'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = false
+            signingConfig = signingConfigs.deneme
+        }
+        debug {
+            signingConfig = signingConfigs.deneme
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+}

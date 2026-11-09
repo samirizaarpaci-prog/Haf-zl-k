@@ -1,0 +1,4 @@
+// Android Gradle eklentisi 8.13.0 + Gradle 8.14.3: Google Play'in istediği Android 16 (API 36) hedefini destekler.
+plugins {
+    id 'com.android.application' version '8.13.0' apply false
+}

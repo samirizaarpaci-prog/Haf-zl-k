@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sayfanın zemin rengiyle aynı: açılışta ve sistem çubuklarının arkasında görünür. -->
+    <color name="zemin">#F1F4EE</color>
+    <!-- Uygulama simgesinin zemini (mushaf cildi yeşili). -->
+    <color name="ikon_zemin">#17493A</color>
+</resources>
