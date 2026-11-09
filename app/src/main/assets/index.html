@@ -347,7 +347,7 @@ function defaultState(method, today) {
     v: 1, method, startedAt: today, pages: "0".repeat(PAGES),
     osm: { ptr: 1, per: 1, h: 1 },
     pak: { per: 1, men: "auto", m: 0 },
-    cuz: { post: 0 },
+    cuz: { post: 0, per: 1 },
     sure: { ay: new Array(114).fill(0), cur: 0, dir: "desc", rev: 5, rp: 0, last: 0 }
   };
 }
@@ -512,6 +512,24 @@ function planLesson(st, extra) {
   const f = { osmanli: planOsmanli, pakistan: planPakistan, cuz: planCuz, sure: planSure }[st.method];
   return f ? f(st, !!extra) : { items: [], complete: false };
 }
+// Günün dersleri. Cüz Usulünde günde birden fazla sayfa seçildiyse her sayfa ayrı bir derstir
+// ve kendi tekrarını (ana sıra cüzü + varsa yan sıra parçası) getirir.
+function planDay(st) {
+  const lessons = [planLesson(st, false)];
+  if (st.method !== "cuz") return lessons;
+  const per = Math.max(1, Math.min(10, st.cuz.per | 0));
+  let sim = null;
+  for (let i = 1; i < per; i++) {
+    const nw = lessons[i - 1].items.find(x => x.kind === "new");
+    if (!nw) break;
+    if (!sim) sim = JSON.parse(JSON.stringify(st));
+    applyFx(sim, JSON.parse(JSON.stringify(nw)));
+    const L = planLesson(sim, true);
+    if (!L.items.some(x => x.kind === "new")) break;
+    lessons.push(L);
+  }
+  return lessons;
+}
 function applyFx(st, it) {
   const fx = it.fx;
   it.applied = {};
@@ -549,7 +567,7 @@ const METHODS = {
     desc: "Baştan sona sırayla gidilir. Her gün üç parça okunur: sebak (yeni ders), sebki (içinde bulunduğun cüzün başından bugüne kadarki kısmı) ve menzil (biten eski cüzlerden sıradaki parça).",
     cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o günün sebki ve menzili." },
   cuz: { name: "Cüz Usulü", to: "Cüz Usulüne geç",
-    desc: "Her gün sırayla bir yeni sayfa ezberlenir. Cüzün kaçıncı sayfasındaysan o kadar cüz geri gidip o cüzü tekrar edersin. 22. cüzden itibaren 21–30. cüzler 10'ar sayfalık yan sırayla eklenir; günlük tekrar en fazla 30 sayfadır.",
+    desc: "Her gün sırayla yeni sayfa ezberlenir; günde bir sayfa ya da ayarladığın kadar. Cüzün kaçıncı sayfasını ezberliyorsan o kadar cüz geri gidip o cüzü tekrar edersin; her yeni sayfa kendi tekrarını getirir. 22. cüzden itibaren 21–30. cüzler 10'ar sayfalık yan sırayla eklenir.",
     cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o gün tekrar edilen cüz ve yan sıra parçası." },
   sure: { name: "Sure Sure", to: "Sure Sure usulüne geç",
     desc: "114 sure arasından istediğin sureyi seçip ezberlersin. İlerleme ayet ayet tutulur; ezberlediğin sureler her gün sırayla tekrar edilir.",
@@ -719,7 +737,7 @@ function saveDay(t) {
 function todayRec() {
   const rec = S.days[S.today];
   if (rec) return { rec, eph: false };
-  return { rec: { date: S.today, method: S.state.method, lessons: [planLesson(S.state, false)], entries: [] }, eph: true };
+  return { rec: { date: S.today, method: S.state.method, lessons: planDay(S.state), entries: [] }, eph: true };
 }
 function materialize() { if (!S.days[S.today]) S.days[S.today] = todayRec().rec; return S.days[S.today]; }
 function dayStatus(rec) {
@@ -747,19 +765,24 @@ function toggleItem(li, ii) {
     if (!hadAll && memCount(st.pages) === PAGES) toast("Hafızlık tamamlandı. Hayırlı olsun!");
     else if (fresh.length) toast(fresh.join(", ") + ". cüz tamamlandı.");
   } else {
-    if (it.kind === "new" && li < rec.lessons.length - 1) { toast("Önce sonraki dersi geri al."); return; }
+    if (it.kind === "new" && rec.lessons.slice(li + 1).some(L2 => L2.items.some(x => x.kind === "new" && x.done))) { toast("Önce sonraki dersi geri al."); return; }
     revertFx(st, it); it.done = false;
   }
   saveState(); saveDay(S.today); render();
 }
-function canAddLesson(rec) {
-  const last = rec.lessons[rec.lessons.length - 1], nw = last && last.items.find(i => i.kind === "new");
-  return !!(nw && nw.done && planLesson(S.state, true).items.some(i => i.kind === "new"));
+// Bugünkü derslerin henüz işaretlenmemiş yeni sayfaları da ezberlenmiş sayılarak bir sonraki ders bulunur;
+// böylece "Bir ders daha ekle" dersi işaretlemeden önce de çalışır.
+function simAfter(rec) {
+  const sim = clone(S.state);
+  rec.lessons.forEach(L => L.items.forEach(it => { if (it.kind === "new" && !it.done && it.fx) applyFx(sim, clone(it)); }));
+  return sim;
 }
+function nextExtra(rec) { const p = planLesson(simAfter(rec), true); return p.items.some(i => i.kind === "new") ? p : null; }
+function canAddLesson(rec) { return rec.lessons.length < 30 && !!nextExtra(rec); }
 function addLesson() {
-  const rec = materialize();
-  if (!canAddLesson(rec)) return;
-  rec.lessons.push(planLesson(S.state, true));
+  const rec = materialize(), p = nextExtra(rec);
+  if (!p) return;
+  rec.lessons.push(p);
   saveDay(S.today); render();
 }
 function removeLesson(li) {
@@ -926,7 +949,7 @@ function estimate(remaining) {
   let sum = 0;
   Object.keys(S.days).forEach(k => { const age = daysBetween(k, S.today); if (age >= 0 && age < span) sum += newAmount(S.days[k]); });
   let pace = sum / span;
-  if (pace <= 0) { const m = S.state.method; pace = m === "osmanli" ? S.state.osm.per : m === "pakistan" ? S.state.pak.per : m === "cuz" ? 1 : 0; }
+  if (pace <= 0) { const m = S.state.method; pace = m === "osmanli" ? S.state.osm.per : m === "pakistan" ? S.state.pak.per : m === "cuz" ? Math.max(1, S.state.cuz.per | 0) : 0; }
   if (pace <= 0) return { v: "—", s: "ilk kayıttan sonra" };
   const days = Math.ceil(remaining / pace);
   if (days > 36500) return { v: "—", s: "kayıt arttıkça netleşir" };
@@ -1021,7 +1044,9 @@ function viewSettings() {
   let inner, title = m.name + " ayarları";
   if (st.method === "osmanli") inner = seg("osm.per", st.osm.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük çiğ") + `<p class="set-desc">Her gün sıradaki cüzden bu kadar yeni sayfa ezberlenir.</p>`;
   else if (st.method === "pakistan") inner = seg("pak.per", st.pak.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük sebak") + seg("pak.men", st.pak.men, [["auto", "Otomatik"], [5, "5"], [10, "10"], [20, "20"], [30, "30"], [60, "60 sayfa"]], "Günlük menzil") + `<p class="set-desc">Otomatik seçimde menzil, biten cüz sayısına göre artar: 1–3 cüz için 5 sayfa, 4–7 cüz için 10, 8–15 cüz için 20, 16–20 cüz için 30, daha fazlası için 60 sayfa.</p>`;
-  else if (st.method === "cuz") { title = "Cüz Usulü kuralları"; inner = `<ul class="rules"><li>Her gün sırayla bir yeni sayfa ezberlenir.</li><li>Cüzün kaçıncı sayfasındaysan o kadar cüz geri gidip o cüzü tekrar edersin; en son biten cüz önce gelir.</li><li>21. cüzden itibaren ana sıra her cüzde 20. cüzden 1. cüze iner.</li><li>22. cüzden itibaren biten 21–30. cüzler 10'ar sayfalık yan sıraya girer. Burada da tersten gidilir: son 10 sayfa önce, ondan önceki 10 sayfa sonra okunur.</li><li>Günlük tekrar en fazla 30 sayfadır. Hafızlık bitince aynı düzen sürer ve 20 günde bir hatim olur.</li></ul>`; }
+  else if (st.method === "cuz") inner = seg("cuz.per", st.cuz.per, [[1, "1 sayfa"], [2, "2"], [3, "3"], [4, "4"], [5, "5 sayfa"]], "Günlük ezber")
+    + `<p class="set-desc">Her yeni sayfa ayrı bir derstir ve kendi cüz tekrarını getirir: günde 2 sayfa ezberlersen o gün 2 cüz tekrar edilir. O gün fazladan ders yapmak istersen Bugün ekranındaki "Bir ders daha ekle" düğmesini kullan.</p>`
+    + `<span class="flabel">Kurallar</span><ul class="rules"><li>Her gün sırayla yeni sayfa ezberlenir: günde bir sayfa ya da yukarıda seçtiğin kadar.</li><li>Cüzün kaçıncı sayfasını ezberliyorsan o kadar cüz geri gidip o cüzü tekrar edersin; en son biten cüz önce gelir. Her yeni sayfa kendi tekrarını getirir.</li><li>21. cüzden itibaren ana sıra her cüzde 20. cüzden 1. cüze iner.</li><li>22. cüzden itibaren biten 21–30. cüzler 10'ar sayfalık yan sıraya girer. Burada da tersten gidilir: son 10 sayfa önce, ondan önceki 10 sayfa sonra okunur.</li><li>Günde bir sayfa ezberlenirse tekrar en fazla 30 sayfadır. Hafızlık bitince aynı düzen sürer ve 20 günde bir hatim olur.</li></ul>`;
   else inner = seg("sure.dir", st.sure.dir, [["desc", "Sondan başa (Nâs → Fâtiha)"], ["asc", "Baştan sona (Fâtiha → Nâs)"]], "Önerilen sıra") + seg("sure.rev", st.sure.rev, [[0, "Kapalı"], [2, "≈2"], [5, "≈5"], [10, "≈10"], [20, "≈20 sayfa"]], "Günlük sıra tekrarı") + `<p class="set-desc">Ezberlediğin sureler sırayla tekrar edilir; her gün yaklaşık bu kadar sayfa okunur. Sayfa miktarı, surelerin mushaftaki uzunluğuna göre yapılan bir tahmindir.</p>`;
   h += `<section class="set-sec"><h2 class="label">${esc(title)}</h2>${inner}</section>`;
   h += positionHtml(st) + backupHtml() + storageHtml();
@@ -1329,7 +1354,9 @@ document.addEventListener("click", e => {
       const parts = d.k.split("."), v = /^\d+$/.test(d.v) ? Number(d.v) : d.v;
       st[parts[0]][parts[1]] = v;
       if (d.k === "sure.dir" && st.sure.cur && st.sure.ay[st.sure.cur - 1] === 0) st.sure.cur = sureSuggest(st);
-      dropIdleToday(); saveState(); render(); return;
+      dropIdleToday(); saveState(); render();
+      if (/\.per$/.test(d.k) && dayStatus(S.days[S.today])) toast("Yeni ayar yarından geçerli. Bugün için \"Bir ders daha ekle\" düğmesini kullanabilirsin.");
+      return;
     }
     case "pos-ask": S.ui.confirm = "pos"; render(); return;
     case "pos-apply": applyPos(); return;
