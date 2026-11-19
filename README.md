@@ -4,7 +4,7 @@ Hafızlıkta ilerlemeyi takip etmek ve görmek için Android uygulaması. İlk a
 
 - **Osmanlı Usulü:** her cüzün son sayfasından geriye doğru; her gün sıradaki cüzden bir çiğ sayfa, o cüzün önceki sayfaları pişmiş olarak okunur.
 - **Pakistan Usulü:** baştan sona sırayla; her gün sebak (yeni ders), sebki (bulunduğun cüzün başından bugüne kadarki kısmı) ve menzil (biten eski cüzlerden sıradaki parça).
-- **Cüz Usulü:** her gün sırayla yeni sayfa (günde 1–5 sayfa, ayrıca "Bir ders daha ekle"); cüzün kaçıncı sayfası ezberleniyorsa o kadar cüz geri gidip o cüz tekrar edilir, her sayfa kendi tekrarını getirir. 22. cüzden itibaren 21–30. cüzler 10'ar sayfalık yan sırayla eklenir.
+- **Cüz Usulü:** her gün sırayla yeni sayfa (günde 1–5 sayfa, ayrıca "Bir ders daha ekle"). Ezberlenmiş bütün eski cüzler, ezberlenen cüzün 20 sayfasına eşit paylaştırılır ve tek listede sondan başa tekrar edilir: n. cüzde günde n−1 sayfa. Bir cüzün tekrarı bitmeden diğerine geçilmez. Hafızlık bitince günde 30 sayfa, 20 günde bir hatim.
 - **Sure Sure:** 114 sure arasından seçerek, ayet ayet.
 
 ## Telefona kurmak

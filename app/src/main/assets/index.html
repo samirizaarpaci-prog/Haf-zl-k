@@ -429,19 +429,27 @@ function planPakistan(st, extra) {
   return { items, complete: !first };
 }
 
-/* ---- Cüz Usulü: sırayla bir sayfa; k. sayfada k cüz geri; 21–30 yan sırada 10'ar sayfa, tersten ---- */
+/* ---- Cüz Usulü: sırayla sayfa; ezberli bütün cüzler, ezberlenen cüzün 20 sayfasına eşit paylaştırılır ----
+   n. cüzün k. sayfasında (k = 1…20) önceki m = n−1 cüzün sondan başa k. dilimi okunur:
+   s. 20m − km + 1 … 20m − (k−1)m, yani her gün m sayfa. Tek liste; dilim iki cüze düşerse önce yeni cüz
+   bitirilir, sonra eskisine geçilir. Hafızlık bitince (n = 31) günde 30 sayfa, 20 günde bir hatim. */
 function cuzReview(n, k) {
-  const main = n <= 21 ? (n - k >= 1 ? n - k : 0) : 21 - k;
-  const m = n - 21;
-  let side = null;
-  if (m >= 1 && k <= 2 * m) { const b = 2 * m - k + 1; side = [400 + 10 * (b - 1) + 1, 400 + 10 * b]; }
-  return { main, side };
+  const m = Math.min(30, n - 1);
+  return m >= 1 ? [20 * m - k * m + 1, 20 * m - (k - 1) * m] : null;
+}
+function cuzPieces(a, b) { // dilimin cüzlere düşen parçaları, okuma sırasıyla (yeni cüz önce)
+  const out = [];
+  for (let c = cuzOf(b); c >= cuzOf(a); c--) out.push([Math.max(a, cuzFirst(c)), Math.min(b, cuzLast(c))]);
+  return out;
 }
 function cuzItems(n, k, fx) {
-  const r = cuzReview(n, k), out = [];
-  if (r.main >= 1) { const rg = [[cuzFirst(r.main), cuzLast(r.main)]]; out.push(mkItem("rev", "Ana sıra", r.main + ". cüz", fmtPages(rg) + " · 20 sayfa", rg, fx)); }
-  if (r.side) { const rg = [r.side]; out.push(mkItem("rev", "Yan sıra", fmtPages(rg), cuzOf(r.side[0]) + ". cüz · " + (kOf(r.side[0]) === 1 ? "ilk" : "son") + " 10 sayfa", rg)); }
-  return out;
+  const r = cuzReview(n, k);
+  if (!r) return [];
+  const pcs = cuzPieces(r[0], r[1]), cnt = r[1] - r[0] + 1, whole = p => kOf(p[0]) === 1 && kOf(p[1]) === 20;
+  const main = pcs.map(p => (whole(p) ? cuzOf(p[0]) + ". cüz" : "s. " + fmtRange(p))).join(" + ");
+  const sub = pcs.length === 1 ? (whole(pcs[0]) ? fmtPages(pcs) : cuzOf(pcs[0][0]) + ". cüz") + " · " + cnt + " sayfa"
+    : pcs.map(p => cuzOf(p[0]) + ". cüz").join(", sonra ") + " · " + cnt + " sayfa";
+  return [mkItem("rev", (n > 30 ? "Hatim " : "Tekrar ") + k + "/20", main, sub, [r], fx)];
 }
 function planCuz(st, extra) {
   const first = firstUnmem(st.pages);
@@ -567,8 +575,8 @@ const METHODS = {
     desc: "Baştan sona sırayla gidilir. Her gün üç parça okunur: sebak (yeni ders), sebki (içinde bulunduğun cüzün başından bugüne kadarki kısmı) ve menzil (biten eski cüzlerden sıradaki parça).",
     cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o günün sebki ve menzili." },
   cuz: { name: "Cüz Usulü", to: "Cüz Usulüne geç",
-    desc: "Her gün sırayla yeni sayfa ezberlenir; günde bir sayfa ya da ayarladığın kadar. Cüzün kaçıncı sayfasını ezberliyorsan o kadar cüz geri gidip o cüzü tekrar edersin; her yeni sayfa kendi tekrarını getirir. 22. cüzden itibaren 21–30. cüzler 10'ar sayfalık yan sırayla eklenir.",
-    cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o gün tekrar edilen cüz ve yan sıra parçası." },
+    desc: "Her gün sırayla yeni sayfa ezberlenir; günde bir sayfa ya da ayarladığın kadar. Ezberlediğin eski cüzler, şu an ezberlediğin cüzün 20 sayfasına eşit paylaştırılır ve tek listede, sondan başa tekrar edilir. Günlük tekrar her yeni cüzde bir sayfa artar.",
+    cap: "Her sütun bir cüz, her kare bir sayfa. Ezber baştan sona ilerler; açık altın kareler o günün tekrarı, eski cüzlerde sondan başa doğru ilerler." },
   sure: { name: "Sure Sure", to: "Sure Sure usulüne geç",
     desc: "114 sure arasından istediğin sureyi seçip ezberlersin. İlerleme ayet ayet tutulur; ezberlediğin sureler her gün sırayla tekrar edilir.",
     cap: "Her kare bir sure. Ezber Nâs'tan geriye doğru ilerler; açık altın kareler o günün tekrarı." }
@@ -855,7 +863,7 @@ function emptyText(m) {
   if (m === "osmanli") return "Bu cüzde henüz pişmiş sayfa yok.";
   if (m === "pakistan") return "Bugün tekrar yok. Sebki bu cüzün ikinci sayfasında, menzil ilk cüz bitince başlar.";
   if (m === "sure") return "Henüz tekrar edilecek sure yok.";
-  return "Bugün eski cüz tekrarı yok.";
+  return "1. cüzde tekrar yok; tekrar 2. cüzle başlar.";
 }
 function totalsHtml(rec) {
   let all = 0, done = 0, nNew = 0, nRev = 0, wRev = 0;
@@ -1045,8 +1053,8 @@ function viewSettings() {
   if (st.method === "osmanli") inner = seg("osm.per", st.osm.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük çiğ") + `<p class="set-desc">Her gün sıradaki cüzden bu kadar yeni sayfa ezberlenir.</p>`;
   else if (st.method === "pakistan") inner = seg("pak.per", st.pak.per, [[1, "1 sayfa"], [2, "2 sayfa"], [3, "3 sayfa"]], "Günlük sebak") + seg("pak.men", st.pak.men, [["auto", "Otomatik"], [5, "5"], [10, "10"], [20, "20"], [30, "30"], [60, "60 sayfa"]], "Günlük menzil") + `<p class="set-desc">Otomatik seçimde menzil, biten cüz sayısına göre artar: 1–3 cüz için 5 sayfa, 4–7 cüz için 10, 8–15 cüz için 20, 16–20 cüz için 30, daha fazlası için 60 sayfa.</p>`;
   else if (st.method === "cuz") inner = seg("cuz.per", st.cuz.per, [[1, "1 sayfa"], [2, "2"], [3, "3"], [4, "4"], [5, "5 sayfa"]], "Günlük ezber")
-    + `<p class="set-desc">Her yeni sayfa ayrı bir derstir ve kendi cüz tekrarını getirir: günde 2 sayfa ezberlersen o gün 2 cüz tekrar edilir. O gün fazladan ders yapmak istersen Bugün ekranındaki "Bir ders daha ekle" düğmesini kullan.</p>`
-    + `<span class="flabel">Kurallar</span><ul class="rules"><li>Her gün sırayla yeni sayfa ezberlenir: günde bir sayfa ya da yukarıda seçtiğin kadar.</li><li>Cüzün kaçıncı sayfasını ezberliyorsan o kadar cüz geri gidip o cüzü tekrar edersin; en son biten cüz önce gelir. Her yeni sayfa kendi tekrarını getirir.</li><li>21. cüzden itibaren ana sıra her cüzde 20. cüzden 1. cüze iner.</li><li>22. cüzden itibaren biten 21–30. cüzler 10'ar sayfalık yan sıraya girer. Burada da tersten gidilir: son 10 sayfa önce, ondan önceki 10 sayfa sonra okunur.</li><li>Günde bir sayfa ezberlenirse tekrar en fazla 30 sayfadır. Hafızlık bitince aynı düzen sürer ve 20 günde bir hatim olur.</li></ul>`;
+    + `<p class="set-desc">Her yeni sayfa ayrı bir derstir ve tekrarın bir parçasını getirir: günde 2 sayfa ezberlersen o gün 2 parça tekrar edilir, tekrar turu da cüzle birlikte 10 günde biter. O gün fazladan ders yapmak istersen Bugün ekranındaki "Bir ders daha ekle" düğmesini kullan.</p>`
+    + `<span class="flabel">Kurallar</span><ul class="rules"><li>Her gün sırayla yeni sayfa ezberlenir: günde bir sayfa ya da yukarıda seçtiğin kadar.</li><li>Ezberlediğin bütün eski cüzler, şu an ezberlediğin cüzün 20 sayfasına eşit paylaştırılır. Cüzün her sayfası tekrarın bir parçasını getirir; cüz bitince bütün eski cüzler bir kez tekrar edilmiş olur.</li><li>Tekrar sondan başa gider: en son ezberlenen sayfalar önce, en eski sayfalar en son okunur.</li><li>Tek liste vardır. Bir cüzün tekrarı bitmeden diğerine geçilmez; bir gün içinde cüz biterse sıradaki cüzün sonundan devam edilir.</li><li>Günlük tekrar her yeni cüzde bir sayfa artar: 2. cüzde günde 1 sayfa, 5. cüzde 4, 21. cüzde 20, 30. cüzde 29 sayfa.</li><li>Hafızlık bitince aynı düzen sürer: günde 30 sayfa, 20 günde bir hatim.</li></ul>`;
   else inner = seg("sure.dir", st.sure.dir, [["desc", "Sondan başa (Nâs → Fâtiha)"], ["asc", "Baştan sona (Fâtiha → Nâs)"]], "Önerilen sıra") + seg("sure.rev", st.sure.rev, [[0, "Kapalı"], [2, "≈2"], [5, "≈5"], [10, "≈10"], [20, "≈20 sayfa"]], "Günlük sıra tekrarı") + `<p class="set-desc">Ezberlediğin sureler sırayla tekrar edilir; her gün yaklaşık bu kadar sayfa okunur. Sayfa miktarı, surelerin mushaftaki uzunluğuna göre yapılan bir tahmindir.</p>`;
   h += `<section class="set-sec"><h2 class="label">${esc(title)}</h2>${inner}</section>`;
   h += positionHtml(st) + backupHtml() + storageHtml();
